@@ -27,7 +27,7 @@
 void initialize();
 void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
 void configTemSensor(char TMP101_address);
-unsigned void UpdateKey(void); //Function prototypes for the three functions.
+void UpdateKey(void); //Function prototypes for the three functions.
 char getKeyCharacter();
 void updateNote(void);
 unsigned char InChar(void);
@@ -37,7 +37,7 @@ int validChar(char);
 // const unsigned char step_tbl[8] = {0b0011, 0b0010, 0b0110, 0b0100, 0b1100, 0b1000, 0b1001, 0b0001}; // High-Torque Stepping Sequence (See Table)
 const unsigned char Keycode_Table[17] = {0xEE, 0xDE, 0xBE, 0x7E, 0xED, 0xDD, 0xBD, 0x7D, 0xEB, 0xDB, 0xBB, 0x7B, 0xE7, 0xD7, 0xB7, 0x77, 0x00};
 const unsigned char ASCII_Table[17] = {'1', '2', '3', 'A', '4', '5', '6', 'B', '7', '8', '9', 'C', '*', '0', '#', 'D', -1};
-int period;
+int note;
 int keyStatus;
 
 void main(void) {
@@ -47,13 +47,17 @@ void main(void) {
     // Sensor = SENSEOR_A;
     period = 0;
     while (1) {
-//        // get_temperature(SENSEOR_A, &temp, &temp_rem); // TMP101 with address 1001000
+        // get_temperature(SENSEOR_A, &temp, &temp_rem); // TMP101 with address 1001000
         char x = getKeyCharacter();
         lcd_clear();
         lcd_goto(0);
-        lcd_putch('C');
-        lcd_putch(x);
-        
+        // lcd_putch('0');
+        // lcd_putch('x');
+        // lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
+        // lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
+        // lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
+        // lcd_putch(keyStatus % 16 - 10 + 'A');
+
         lcd_goto(0x40); // go the next line
         lcd_putch(x);
         lcd_puts("Sensor: ");
@@ -61,48 +65,58 @@ void main(void) {
     }
 }
 
-const unsigned char Keycode_Table[17] = 
-{0xEE, 0xDE, 0xBE, 0x7E, 0xED, 0xDD, 0xBD, 0x7D, 0xEB, 0xDB, 0xBB, 0x7B, 0xE7, 0xD7, 0xB7, 0x77, 0x00};
-const unsigned char ASCII_Table[17] = 
-{'1' , '2' , '3' , 'A' , '4' , '5' , '6' , 'B' , '7' , '8' , '9' , 'C' , '*' , '0' , '#' , 'D' , -1};
 void updateNote(void)
 {
-    if (RB1 == 0) {
-        if (RB0 == 0) {
-            note = 2273; //440Hz, A4
-        } else {
-            note = 4545; //220Hz, A3
-        }
-        CCP1M3 = 0;
-    } else if (RB2 == 0) {
-        if (RB0 == 0) {
-            note = 2025; //493.88Hz, B4
-        } else {
-            note = 4050; //246.94Hz, B3
-        }
-        CCP1M3 = 0;
-    } else if (RB3 == 0) {
-        if (RB0 == 0) {
-            note = 1911; //523.26Hz, C4
-        } else {
-            note = 3822; //261.63Hz, C3
-        }
-        CCP1M3 = 0;
-    } else {
-        note = 0;
-        CCP1M3 = 1;
+    UpdateKey();
+    switch(keyStatus){
+        case 0xefff: note = 
+            break;
+        case 0xfeff: note = 
+            break;
+        case 0xffef: note = 
+            break;
+        case 0xfffe: note = 
+            break;
+        case 0xdfff: note = 
+            break;
+        case 0xfdff: note = 
+            break;
+        case 0xffdf: note = 
+            break;
+        case 0xfffd: note = 
+            break;
+        case 0xbfff: note = 
+            break;
+        case 0xfbff: note = 
+            break;
+        case 0xffbf: note = 
+            break;
+        case 0xfffb: note = 
+            break;
+        case 0x7fff: note = 
+            break;
+        case 0xf7ff: note = 
+            break;
+        case 0xff7f: note = 
+            break;
+        case 0xfff7: note = 
+            break;
+        case 0xffff: note = 0;
+            CCP1M3 = 1;
+            return;
+        default: return;
     }
+    CCP1M3 = 0;
 }
 
-unsigned char UpdateKey()
-{
+void UpdateKey() {
     // keyStatus 16bit represent *741 0852 #693 DCBA
     PORTA = 0b1110; //Check first COL for key depression
     keyStatus = (((int)PORTB << 12) & 0xf000 ) ;
     PORTA = 0b1101; //Check second COL for key depression
     keyStatus |= ((int)PORTB << 8) & 0x0f00;
     PORTA = 0b1011; //Check third COL for key depression
-    keyStatus = (PORTB << 4) & 0x00f0 ) ;
+    keyStatus |= (PORTB << 4) & 0x00f0;
     PORTA = 0b0111; //Check fourth COL for key depression
     keyStatus |= PORTB & 0x000f;
 }
@@ -110,24 +124,25 @@ unsigned char UpdateKey()
 char getKeyCharacter() {
     UpdateKey();
     switch(keyStatus){
-        case 0x1000: return '1';
-        case 0x0100: return '2';
-        case 0x0010: return '3';
-        case 0x0001: return 'A';
-        case 0x2000: return '4';
-        case 0x0200: return '5';
-        case 0x0020: return '6';
-        case 0x0002: return 'B';
-        case 0x4000: return '7';
-        case 0x0400: return '8';
-        case 0x0040: return '9';
-        case 0x0004: return 'C';
-        case 0x8000: return '*';
-        case 0x0800: return '0';
-        case 0x0080: return '#';
-        case 0x0008: return 'D';
+        case 0xefff: return '1';
+        case 0xfeff: return '2';
+        case 0xffef: return '3';
+        case 0xfffe: return 'A';
+        case 0xdfff: return '4';
+        case 0xfdff: return '5';
+        case 0xffdf: return '6';
+        case 0xfffd: return 'B';
+        case 0xbfff: return '7';
+        case 0xfbff: return '8';
+        case 0xffbf: return '9';
+        case 0xfffb: return 'C';
+        case 0x7fff: return '*';
+        case 0xf7ff: return '0';
+        case 0xff7f: return '#';
+        case 0xfff7: return 'D';
+        default: return 'X';
     }
-    return ASCII_Table[i]; //Look up ASCII code of key that was pressed. Return 0x00 (ASCII NULL) if no
+    // return ASCII_Table[i]; //Look up ASCII code of key that was pressed. Return 0x00 (ASCII NULL) if no
 }
 
 unsigned char InChar(void) {
@@ -228,9 +243,7 @@ void interrupt interrupt_handler(void)
 {
     if(CCP1IF == 1)
     {
-        // if (period > 0)
-//            stepcw();
-        CCPR1 = period + CCPR1; 
+        CCPR1 = note + CCPR1; 
         CCP1IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
     }
     // if (RBIF == 1) {
