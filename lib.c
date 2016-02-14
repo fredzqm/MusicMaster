@@ -4,8 +4,8 @@
 #include "lib.h"
 
 int keyStatus, note;
-char mode, flag, buffStart, buffEnd;
-char buffer[20];
+char mode, bufRead, bufWrite;
+char buffer[BUFF_SIZE];
 
 void playNote() {
     char x = getKeyCharacter();
@@ -96,9 +96,14 @@ void UpdateKey() {
     keyStatus |= PORTB & 0x000f;
 }
 
-unsigned char InChar(void) {
-    while (RCIF == 0);
-    return RCREG;
+char hasInChar() {
+    return bufRead != bufWrite;
+}
+
+unsigned char InChar() {
+    char ret = buffer[bufRead];
+    bufRead = (bufRead + 1 ) % BUFF_SIZE;
+    return ret;
 }
 
 void OutChar(unsigned char outchr)
@@ -133,6 +138,8 @@ void general_init() {
     SPEN = 1; SYNC = 0; TXEN = 1; //Enable transmit side of UART for asynchronous operation
     BRG16 = 1; BRGH= 0; SPBRGH = 0; SPBRG = 51; //Config UART for 9600 Baud
     // system clock is 8MHz
+    RCIF = 0;
+    RCIE = 1;
 // -------------------------------------------------------------- timer1
     TMR1GE = 0;   TMR1ON = 1;         //Enable TIMER1 (See Fig. 6-1 TIMER1 Block Diagram in PIC16F887 Data Sheet)
     TMR1CS = 0;                     //Select internal clock whose frequency is Fosc/4 = 2 MHz, where Fosc = 8 MHz
@@ -155,4 +162,21 @@ void general_init() {
 
     lcd_init();
 
+    bufRead = 0;
+    bufWrite = 0;
+
+}
+
+void general_interrupt() {
+    if(CCP1IF == 1)
+    {
+        CCPR1 = note + CCPR1; 
+        CCP1IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
+    }
+    if(RCIF == 0)
+    {
+        buffer[bufWrite] = RCREG;
+        bufWrite = (bufWrite + 1 ) % BUFF_SIZE;
+        RCIF = 0;
+    }
 }

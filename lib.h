@@ -1,16 +1,18 @@
 #include "i2c.h"
 #include "lcd4bits.h"
 
-
+#define BUFF_SIZE 20
 
 void playNote(); // default
 char toHex(char binary);
 int getNote(void);
+char hasInChar();
 unsigned char InChar(void);
 void OutChar(unsigned char);
 char getKeyCharacter();
 void UpdateKey(void);
 void general_init();
+void general_interrupt();
 
 enum Mode 
 { 
@@ -23,4 +25,4 @@ enum Mode
  
 extern int keyStatus, note;
 extern char mode, flag, buffStart, buffEnd;
-extren char buffer[20];
+extern char buffer[BUFF_SIZE];

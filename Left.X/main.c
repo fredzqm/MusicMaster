@@ -29,18 +29,10 @@ void initialize();
 void testTemperature(unsigned char TMP101_address);
 void configTemSensor(char TMP101_address);
 
-enum Mode 
-{ 
-  SELECT_GAME, 
-  PLAY_NOTE,
-  TEMP_TEST,
-  RESUT_DISPALY,
-  ENTER_DATA
-};
 
 void main(void) {
     initialize();
-    mode = Test_Temperature;
+    mode = TEMP_TEST;
     // Sensor = SENSEOR_A;
     char temp_rem, temp;
     while (1) {
@@ -54,7 +46,7 @@ void main(void) {
                 testTemperature(SENSEOR_A); // TMP101 with address 1001000
             case RESUT_DISPALY:
                 break;
-            case ENTER_DATA;
+            case ENTER_DATA:
                 break;
         }
     }
@@ -68,29 +60,9 @@ void initialize()
  // --------------------------------------------------------------- set this to 12-bit mode
     I2C_Initialize();
     configTemSensor(SENSEOR_A);
-    
+
     PEIE = 1;                   //Enable all peripheral interrupts 
     GIE = 1;                    //Globally Enable all interrupts 
-}
-
-
-void interrupt interrupt_handler(void) 
-{
-    if(CCP1IF == 1)
-    {
-        CCPR1 = note + CCPR1; 
-        CCP1IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
-    }
-    // if (RBIF == 1) {
-    //     if (RB0 == 0) {
-    //         if (Sensor == SENSEOR_A){
-    //             RA5 = 1;
-    //         }else
-    //             Sensor = SENSEOR_A;
-    //     }
-    //     DelayMs(5);
-    //     RBIF = 0;
-    // }
 }
 
 
@@ -166,4 +138,22 @@ void configTemSensor(char TMP101_address) {
     I2C_SendByte(0x60); // Sets pointer register to 00 (configure register) for
     I2C_Stop();         // Generate stop condition
 
+}
+
+
+
+void interrupt interrupt_handler(void) 
+{
+    general_interrupt();
+
+    // if (RBIF == 1) {
+    //     if (RB0 == 0) {
+    //         if (Sensor == SENSEOR_A){
+    //             RA5 = 1;
+    //         }else
+    //             Sensor = SENSEOR_A;
+    //     }
+    //     DelayMs(5);
+    //     RBIF = 0;
+    // }
 }

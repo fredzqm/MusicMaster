@@ -55,7 +55,7 @@ void main(void) {
                 break;
             case RESUT_DISPALY:
                 break;
-            case ENTER_DATA;
+            case ENTER_DATA:
                 enterData();
                 break;
         }
@@ -92,6 +92,7 @@ void selectGame() {
 }
 
 void enterData() {
+    while (!hasInChar());
     char input = InChar();
     lcd_clear();
     lcd_putch(input);
@@ -149,18 +150,15 @@ void initialize()
 
 void interrupt interrupt_handler(void) 
 {
-    if(CCP1IF == 1)
-    {
-        CCPR1 = note + CCPR1; 
-        CCP1IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
-    }
+    general_interrupt();
+    
     if(CCP2IF == 1)
     {
         if (RC1 == 0){
             nextRising = CCPR2 + 40000; // 20ms period
             CCPR2 = width + CCPR2;      // Tick_rate/(2*tone_freq) = 1 MHz/(2*440) = 1136 => generate 440 Hz tone
             RC1 = 1;
-          }else{
+          } else {
             CCPR2 = nextRising;
             RC1 = 0;
         }
