@@ -29,7 +29,7 @@ void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
 void configTemSensor(char TMP101_address);
 void UpdateKey(void); //Function prototypes for the three functions.
 char getKeyCharacter();
-void updateNote(void);
+int getNote(void);
 unsigned char InChar(void);
 void OutChar(unsigned char);
 int validChar(char);
@@ -41,23 +41,25 @@ int note;
 int keyStatus;
 
 void main(void) {
-    char temp, temp_rem;
-    char sign_char, dig0_char, dig1_char, dig2_char, tenth_char, hundredth_char;
     initialize();
     // Sensor = SENSEOR_A;
-    period = 0;
     while (1) {
         // get_temperature(SENSEOR_A, &temp, &temp_rem); // TMP101 with address 1001000
         char x = getKeyCharacter();
+        note = getNote() / 2;
+        if (note == 0){
+            CCP1M3 = 1;
+        } else {
+            CCP1M3 = 0;
+        }
         lcd_clear();
         lcd_goto(0);
-        // lcd_putch('0');
-        // lcd_putch('x');
-        // lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
-        // lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
-        // lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
-        // lcd_putch(keyStatus % 16 - 10 + 'A');
-
+        lcd_putch('0');
+        lcd_putch('x');
+        lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
+        lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
+        lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
+        lcd_putch(keyStatus % 16 - 10 + 'A');
         lcd_goto(0x40); // go the next line
         lcd_putch(x);
         lcd_puts("Sensor: ");
@@ -65,48 +67,38 @@ void main(void) {
     }
 }
 
-void updateNote(void)
+int getNote(void)
 {
     UpdateKey();
+    if (keyStatus && 0xfff0 == 0xfff0)
+        return 0;
     switch(keyStatus){
-        case 0xefff: note = 
-            break;
-        case 0xfeff: note = 
-            break;
-        case 0xffef: note = 
-            break;
-        case 0xfffe: note = 
-            break;
-        case 0xdfff: note = 
-            break;
-        case 0xfdff: note = 
-            break;
-        case 0xffdf: note = 
-            break;
-        case 0xfffd: note = 
-            break;
-        case 0xbfff: note = 
-            break;
-        case 0xfbff: note = 
-            break;
-        case 0xffbf: note = 
-            break;
-        case 0xfffb: note = 
-            break;
-        case 0x7fff: note = 
-            break;
-        case 0xf7ff: note = 
-            break;
-        case 0xff7f: note = 
-            break;
-        case 0xfff7: note = 
-            break;
-        case 0xffff: note = 0;
-            CCP1M3 = 1;
-            return;
-        default: return;
+        case 0xeffe: return 3058; // 1A
+        case 0xfefe: return 2724; // 2A
+        case 0xffee: return 2427; // 3A
+        case 0xdffe: return 2291; // 4A
+        case 0xfdfe: return 2041; // 5A
+        case 0xffde: return 1818; // 6A
+        case 0xbffe: return 1620; // 7A
+
+        case 0xefff: return 1529; // 1
+        case 0xfeff: return 1362; // 2
+        case 0xffef: return 1213; // 3
+        case 0xdfff: return 1145; // 4
+        case 0xfdff: return 1020; // 5
+        case 0xffdf: return 909; // 6
+        case 0xbfff: return 810; // 7
+
+        case 0xeffd: return 764; // 1B
+        case 0xfefd: return 681; // 2B
+        case 0xffed: return 607; // 3B
+        case 0xdffd: return 573; // 4B
+        case 0xfdfd: return 510; // 5B
+        case 0xffdd: return 454; // 6B
+        case 0xbffd: return 405; // 7B
+
+        default: return note; // 1
     }
-    CCP1M3 = 0;
 }
 
 void UpdateKey() {
@@ -195,9 +187,6 @@ void initialize()
     TRISB = 0xff; // set PORTB as input
     TRISA = 0; // set PORTA as output, for debugging purpose
     TRISD = 0b11110000; //Make RD3:0 outputs (LEDs connected to RD3:0)
-    // RD3 = 0;
-    TRISA = 0; //Make RA3:0 outputs (to drive the columns of the 4x4 keypad)
-    RA5 = 1;
 
 // -------------------------------------------------------------- UART
 
@@ -221,7 +210,7 @@ void initialize()
     CCP1M3 = 0;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
                                 //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
                                 //See REGISTER 11-1 datasheet
-    // TRISC2 = 0;                 //Make CCP1 pin an output.
+    TRISC2 = 0;                 //Make CCP1 pin an output.
     CCP1IF = 0; 
     CCP1IE = 1;                 //Unmask (enable) Compare Interrupt from CCP1 (Interrupt when CCP1IF flag is set to 1)
 
@@ -230,8 +219,8 @@ void initialize()
     // configTemSensor(SENSEOR_A);
     lcd_init();
  // --------------------------------------------------------------- RB interrupt initialization
-    IOCB0 = 1;
-    RBIF = 0;
+//    IOCB0 = 1;
+//    RBIF = 0;
     // RBIE = 1;
  // ---------------------------------------------------------------
     PEIE = 1;                   //Enable all peripheral interrupts 
