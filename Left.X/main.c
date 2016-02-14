@@ -73,13 +73,13 @@ int getNote(void)
     if ((keyStatus & 0x7330) == 0x7330)
         return 0;
     switch(keyStatus) {
-        case 0xeffe: return 3058; // 1A
-        case 0xfefe: return 2724; // 2A
-        case 0xffee: return 2427; // 3A
-        case 0xdffe: return 2291; // 4A
-        case 0xfdfe: return 2041; // 5A
-        case 0xffde: return 1818; // 6A
-        case 0xbffe: return 1620; // 7A
+        case 0x6fff: return 3058; // 1A
+        case 0x7eff: return 2724; // 2A
+        case 0x7fef: return 2427; // 3A
+        case 0x5fff: return 2291; // 4A
+        case 0x7dff: return 2041; // 5A
+        case 0x7fdf: return 1818; // 6A
+        case 0x3fff: return 1620; // 7A
 
         case 0xefff: return 1529; // 1
         case 0xfeff: return 1362; // 2
@@ -89,15 +89,15 @@ int getNote(void)
         case 0xffdf: return 909; // 6
         case 0xbfff: return 810; // 7
 
-        case 0xeffd: return 764; // 1B
-        case 0xfefd: return 681; // 2B
-        case 0xffed: return 607; // 3B
-        case 0xdffd: return 573; // 4B
-        case 0xfdfd: return 510; // 5B
-        case 0xffdd: return 454; // 6B
-        case 0xbffd: return 405; // 7B
+        case 0xef7f: return 764; // 1B
+        case 0xfe7f: return 681; // 2B
+        case 0xff6f: return 607; // 3B
+        case 0xdf7f: return 573; // 4B
+        case 0xfd7f: return 510; // 5B
+        case 0xff5f: return 454; // 6B
+        case 0xbf7f: return 405; // 7B
 
-        default: return note; // 1
+        default: return 0; // not found
     }
 }
 
