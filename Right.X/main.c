@@ -23,6 +23,9 @@
 #include "lcd4bits.h"
 #define SELECT_GAME 1
 #define ENTER_DATA 2
+void selectGame();
+void enterData();
+
 
 void initialize();
 void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
@@ -33,6 +36,9 @@ int getNote(void);
 unsigned char InChar(void);
 void OutChar(unsigned char);
 unsigned int ADC_convert(); // Function prototypes
+char toHex(char binary);
+
+// ---- various of state
 // int validChar(char);
 char mode;
 int note, width, nextRising;
@@ -66,23 +72,12 @@ void displayVolt(int adval) {
 void main(void) {
     initialize();
     mode = ENTER_DATA;
+    mode = 0;
     while (1) {
         if (mode == SELECT_GAME){
-            unsigned int adval, i;
-            for (i = 0 ; i < 50 ; i++){
-                DelayMs(5);
-                adval = ADC_convert();
-                width = widthMin + ( (unsigned long) adval * widthRange )/1023;
-            }
-            displayVolt(adval);
+            selectGame();
         } else if (mode == ENTER_DATA){
-            lcd_clear();
-            int i;
-            for (i = 0; i < 10; i++) {
-                char input = InChar();
-                lcd_putch(input);
-                OutChar(input);
-            }
+            enterData();
         } else {
             char x = getKeyCharacter();
             note = getNote() / 2;
@@ -95,10 +90,10 @@ void main(void) {
             lcd_goto(0);
             lcd_putch('0');
             lcd_putch('x');
-            lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
-            lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
-            lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
-            lcd_putch(keyStatus % 16 - 10 + 'A');
+            lcd_putch(toHex(keyStatus>>12));
+            lcd_putch(toHex(keyStatus>>8));
+            lcd_putch(toHex(keyStatus>>12));
+            lcd_putch(toHex(keyStatus));
             lcd_goto(0x40); // go the next line
             lcd_putch(x);
             lcd_puts("Sensor: ");
@@ -106,6 +101,39 @@ void main(void) {
         }
     }
 }
+
+
+void selectGame() {
+    unsigned int adval, i;
+    for (i = 0 ; i < 50 ; i++){
+        DelayMs(5);
+        adval = ADC_convert();
+        width = widthMin + ( (unsigned long) adval * widthRange )/1023;
+    }
+    displayVolt(adval);
+}
+
+void enterData() {
+    int i;
+    char input = InChar();
+    lcd_clear();
+    lcd_putch(input);
+    lcd_goto(0x40);
+    lcd_putch('0');
+    lcd_putch('x');
+    lcd_putch(toHex(input/16));
+    lcd_putch(toHex(input));
+    if (input == 0x0d) {
+        int j;
+        for (j = 0; j < 0; j++)
+            OutChar(0x20);
+        OutChar('\n');
+        OutChar('\r');
+    } else {
+        OutChar(input);
+    }
+}
+
 
 int getNote(void)
 {
@@ -317,4 +345,14 @@ void interrupt interrupt_handler(void)
     //     DelayMs(5);
     //     RBIF = 0;
     // }
+}
+
+
+char toHex(char binary){
+    binary = binary % 16;
+    if (binary < 10) {
+        return binary + '0';
+    } else {
+        return binary - 10 + 'A';
+    }
 }

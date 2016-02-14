@@ -33,6 +33,7 @@ int getNote(void);
 unsigned char InChar(void);
 void OutChar(unsigned char);
 int validChar(char);
+char toHex(char binary);
 
 int note;
 int keyStatus;
@@ -324,4 +325,14 @@ void configTemSensor(char TMP101_address) {
     I2C_SendByte(0x60); // Sets pointer register to 00 (configure register) for
     I2C_Stop();         // Generate stop condition
 
+}
+
+
+char toHex(char binary){
+    binary = binary % 16;
+    if (binary < 10) {
+        return binary + '0';
+    } else {
+        return binary - 10 + 'A';
+    }
 }
