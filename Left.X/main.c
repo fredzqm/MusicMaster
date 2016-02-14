@@ -312,7 +312,7 @@ void configTemSensor(char TMP101_address) {
     // char ack = 1;
     // while (ack){ // if ack is high, try this again.
         I2C_Start();        // Generate start condition
-        while (i2c_WriteTo(TMP101_address)); // Send ?Write to Address? byte to all slaves on I2C bus
+         while (i2c_WriteTo(TMP101_address)); // Send ?Write to Address? byte to all slaves on I2C bus
                             // This routine returns a nonzero value if the addressed
                             // TMP101 fails to acknowledge after the master sends out
                             // the ?Write to address? byte, so the program will hang up in

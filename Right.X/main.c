@@ -22,6 +22,7 @@
 #include "i2c.h"
 #include "lcd4bits.h"
 #define SELECT_GAME 1
+#define ENTER_DATA 2
 
 void initialize();
 void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
@@ -64,7 +65,7 @@ void displayVolt(int adval) {
 
 void main(void) {
     initialize();
-    mode = SELECT_GAME;
+    mode = ENTER_DATA;
     while (1) {
         if (mode == SELECT_GAME){
             unsigned int adval, i;
@@ -74,6 +75,14 @@ void main(void) {
                 width = widthMin + ( (unsigned long) adval * widthRange )/1023;
             }
             displayVolt(adval);
+        } else if (mode == ENTER_DATA){
+            lcd_clear();
+            int i;
+            for (i = 0; i < 10; i++) {
+                char input = InChar();
+                lcd_putch(input);
+                OutChar(input);
+            }
         } else {
             char x = getKeyCharacter();
             note = getNote() / 2;
@@ -170,32 +179,33 @@ char getKeyCharacter() {
 
 unsigned char InChar(void) {
     while (RCIF == 0);
-    char read = RCREG;
-    char check = read;
-    char count = 0;
-    for (char i = 0 ; i < 8; i++) {
-        count += check % 2;
-        check /= 2;
-    }
-    if (count % 2) {
-        return read & 0x7f; // the parity bit check success
-    }
-    return 0; // malfunct data, parity check fail
+    return RCREG;
+    // char read = RCREG;
+    // char check = read;
+    // char count = 0;
+    // for (char i = 0 ; i < 8; i++) {
+    //     count += check % 2;
+    //     check /= 2;
+    // }
+    // if (count % 2) {
+    //     return read & 0x7f; // the parity bit check success
+    // }
+    // return 0; // malfunct data, parity check fail
 }
 
 void OutChar(unsigned char outchr)
 {
-    char check = outchr;
-    char count = 0;
-    for (char i = 0 ; i < 7; i++) {
-        count += check % 2;
-        check /= 2;
-    }
-    if (count % 2) {
-      outchr = outchr & 0x7f; // Set the parity bit low
-    } else {
-      outchr = outchr | 0x80; // Set the parity bit high
-    }
+    // char check = outchr;
+    // char count = 0;
+    // for (char i = 0 ; i < 7; i++) {
+    //     count += check % 2;
+    //     check /= 2;
+    // }
+    // if (count % 2) {
+    //   outchr = outchr & 0x7f; // Set the parity bit low
+    // } else {
+    //   outchr = outchr | 0x80; // Set the parity bit high
+    // }
     while(TXIF == 0); //Wait until Transmit Register is Empty (TXIF = 1).
     TXREG = outchr; //Load character to be sent into Transmit register (TXREG).
 }
@@ -229,8 +239,8 @@ void initialize()
 
     CREN = 1; // Enable receive side of UART
     SPEN = 1; SYNC = 0; TXEN = 1; //Enable transmit side of UART for asynchronous operation
-    BRG16 = 1; BRGH=1; SPBRGH = 0; SPBRG = 25; //Config UART for 9600 Baud
-
+    BRG16 = 1; BRGH= 0; SPBRGH = 0; SPBRG = 51; //Config UART for 9600 Baud
+    // system clock is 8MHz
 // -------------------------------------------------------------- timer1
     TMR1GE=0;   TMR1ON = 1;         //Enable TIMER1 (See Fig. 6-1 TIMER1 Block Diagram in PIC16F887 Data Sheet)
     TMR1CS = 0;                     //Select internal clock whose frequency is Fosc/4 = 2 MHz, where Fosc = 8 MHz
@@ -293,11 +303,9 @@ void interrupt interrupt_handler(void)
             nextRising = CCPR2 + 40000; // 20ms period
             CCPR2 = width + CCPR2;      // Tick_rate/(2*tone_freq) = 1 MHz/(2*440) = 1136 => generate 440 Hz tone
             RC1 = 1;
-            RE1 = 1;
-        }else{
+          }else{
             CCPR2 = nextRising;
             RC1 = 0;
-            RE1 = 0;
         }
         CCP2IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
     }
@@ -310,5 +318,3 @@ void interrupt interrupt_handler(void)
     //     RBIF = 0;
     // }
 }
-
-
