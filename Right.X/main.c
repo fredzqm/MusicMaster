@@ -36,8 +36,8 @@ unsigned int ADC_convert(); // Function prototypes
 char mode;
 int note, width, nextRising;
 int keyStatus;
-const int widthMin = 500;
-const int widthRange = 8000;
+const int widthMin = 1080;
+const int widthRange = 4700;
 
 
 void displayVolt(int adval) {
