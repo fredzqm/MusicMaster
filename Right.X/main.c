@@ -21,6 +21,8 @@
 #include <xc.h>
 #include "i2c.h"
 #include "lcd4bits.h"
+#include "../lib.h"
+
 #define SELECT_GAME 1
 #define ENTER_DATA 2
 void selectGame();
@@ -36,7 +38,6 @@ int getNote(void);
 unsigned char InChar(void);
 void OutChar(unsigned char);
 unsigned int ADC_convert(); // Function prototypes
-char toHex(char binary);
 
 // ---- various of state
 // int validChar(char);
@@ -46,8 +47,30 @@ int keyStatus;
 const int widthMin = 1080;
 const int widthRange = 4700;
 
+void main(void) {
+    initialize();
+    mode = ENTER_DATA;
+    mode = 0;
+    while (1) {
+        if (mode == SELECT_GAME){
+            selectGame();
+        } else if (mode == ENTER_DATA){
+            enterData();
+        } else {
+            playNote();
+        }
+    }
+}
 
-void displayVolt(int adval) {
+
+
+void selectGame() {
+    unsigned int adval, i;
+    for (i = 0 ; i < 50 ; i++){
+        DelayMs(5);
+        adval = ADC_convert();
+        width = widthMin + ( (unsigned long) adval * widthRange )/1023;
+    }
     unsigned char char0, char1, char2, char3;
     adval = ((unsigned long) adval * 5000 )/1023;
     char0 = adval % 10 ;
@@ -67,50 +90,6 @@ void displayVolt(int adval) {
     lcd_putch(char2);
     lcd_putch(char1);
     lcd_puts("Volts");
-}
-
-void main(void) {
-    initialize();
-    mode = ENTER_DATA;
-    mode = 0;
-    while (1) {
-        if (mode == SELECT_GAME){
-            selectGame();
-        } else if (mode == ENTER_DATA){
-            enterData();
-        } else {
-            char x = getKeyCharacter();
-            note = getNote() / 2;
-            if (note == 0){
-                CCP1M3 = 1;
-            } else {
-                CCP1M3 = 0;
-            }
-            lcd_clear();
-            lcd_goto(0);
-            lcd_putch('0');
-            lcd_putch('x');
-            lcd_putch(toHex(keyStatus>>12));
-            lcd_putch(toHex(keyStatus>>8));
-            lcd_putch(toHex(keyStatus>>12));
-            lcd_putch(toHex(keyStatus));
-            lcd_goto(0x40); // go the next line
-            lcd_putch(x);
-            lcd_puts("Sensor: ");
-            DelayMs(100);
-        }
-    }
-}
-
-
-void selectGame() {
-    unsigned int adval, i;
-    for (i = 0 ; i < 50 ; i++){
-        DelayMs(5);
-        adval = ADC_convert();
-        width = widthMin + ( (unsigned long) adval * widthRange )/1023;
-    }
-    displayVolt(adval);
 }
 
 void enterData() {

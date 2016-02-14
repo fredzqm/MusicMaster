@@ -21,6 +21,7 @@
 #include <xc.h>
 #include "i2c.h"
 #include "lcd4bits.h"
+#include "../lib.h"
 
 #define SENSEOR_A  0x90
 
@@ -45,28 +46,7 @@ void main(void) {
         char temp_rem, temp;
         testTemperature(SENSEOR_A); // TMP101 with address 1001000
         DelayMs(100);
-        // int i;
-        // for (i = 0; i < 0; i++){
-        //     char x = getKeyCharacter();
-        //     note = getNote() / 2;
-        //     if (note == 0){
-        //         CCP1M3 = 1;
-        //     } else {
-        //         CCP1M3 = 0;
-        //     }
-        //     lcd_clear();
-        //     lcd_goto(0);
-        //     lcd_putch('0');
-        //     lcd_putch('x');
-        //     lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
-        //     lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
-        //     lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
-        //     lcd_putch(keyStatus % 16 - 10 + 'A');
-        //     lcd_goto(0x40); // go the next line
-        //     lcd_putch(x);
-        //     lcd_puts("Sensor: ");
-        //     DelayMs(100);
-        // }
+        playNote();
     }
 }
 
