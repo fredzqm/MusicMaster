@@ -35,8 +35,8 @@ void OutChar(unsigned char);
 int validChar(char);
 
 // const unsigned char step_tbl[8] = {0b0011, 0b0010, 0b0110, 0b0100, 0b1100, 0b1000, 0b1001, 0b0001}; // High-Torque Stepping Sequence (See Table)
-const unsigned char Keycode_Table[17] = {0xEE, 0xDE, 0xBE, 0x7E, 0xED, 0xDD, 0xBD, 0x7D, 0xEB, 0xDB, 0xBB, 0x7B, 0xE7, 0xD7, 0xB7, 0x77, 0x00};
-const unsigned char ASCII_Table[17] = {'1', '2', '3', 'A', '4', '5', '6', 'B', '7', '8', '9', 'C', '*', '0', '#', 'D', -1};
+// const unsigned char Keycode_Table[17] = {0xEE, 0xDE, 0xBE, 0x7E, 0xED, 0xDD, 0xBD, 0x7D, 0xEB, 0xDB, 0xBB, 0x7B, 0xE7, 0xD7, 0xB7, 0x77, 0x00};
+// const unsigned char ASCII_Table[17] = {'1', '2', '3', 'A', '4', '5', '6', 'B', '7', '8', '9', 'C', '*', '0', '#', 'D', -1};
 int note;
 int keyStatus;
 
@@ -70,9 +70,9 @@ void main(void) {
 int getNote(void)
 {
     UpdateKey();
-    if (keyStatus && 0xfff0 == 0xfff0)
+    if ((keyStatus & 0x7330) == 0x7330)
         return 0;
-    switch(keyStatus){
+    switch(keyStatus) {
         case 0xeffe: return 3058; // 1A
         case 0xfefe: return 2724; // 2A
         case 0xffee: return 2427; // 3A
@@ -169,14 +169,14 @@ void OutChar(unsigned char outchr)
     TXREG = outchr; //Load character to be sent into Transmit register (TXREG).
 }
 
-int validChar(char c) {
-    for (int i = 0; i < 16 ; i++){
-        if(c == ASCII_Table[i]){
-            return 1;
-        }
-    }
-    return 0;
-}
+//int validChar(char c) {
+//    for (int i = 0; i < 16 ; i++){
+//        if(c == ASCII_Table[i]){
+//            return 1;
+//        }
+//    }
+//    return 0;
+//}
 
 void initialize() 
 {
