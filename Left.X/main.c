@@ -28,90 +28,47 @@
 void initialize();
 void testTemperature(unsigned char TMP101_address);
 void configTemSensor(char TMP101_address);
-void UpdateKey(void); //Function prototypes for the three functions.
-unsigned char InChar(void);
 
-int note;
-int keyStatus;
+enum Mode 
+{ 
+  SELECT_GAME, 
+  PLAY_NOTE,
+  TEMP_TEST,
+  RESUT_DISPALY,
+  ENTER_DATA
+};
 
 void main(void) {
     initialize();
+    mode = Test_Temperature;
     // Sensor = SENSEOR_A;
+    char temp_rem, temp;
     while (1) {
-        char temp_rem, temp;
-        testTemperature(SENSEOR_A); // TMP101 with address 1001000
-        DelayMs(100);
-        playNote();
+        switch(mode) {
+            case SELECT_GAME:
+                break;
+            case PLAY_NOTE:
+                playNote();
+                break;
+            case TEMP_TEST:
+                testTemperature(SENSEOR_A); // TMP101 with address 1001000
+            case RESUT_DISPALY:
+                break;
+            case ENTER_DATA;
+                break;
+        }
     }
 }
-
-void UpdateKey() {
-    // keyStatus 16bit represent *741 0852 #693 DCBA
-    PORTA = 0b1110; //Check first COL for key depression
-    keyStatus = (((int)PORTB << 12) & 0xf000 ) ;
-    PORTA = 0b1101; //Check second COL for key depression
-    keyStatus |= ((int)PORTB << 8) & 0x0f00;
-    PORTA = 0b1011; //Check third COL for key depression
-    keyStatus |= (PORTB << 4) & 0x00f0;
-    PORTA = 0b0111; //Check fourth COL for key depression
-    keyStatus |= PORTB & 0x000f;
-}
-
-//int validChar(char c) {
-//    for (int i = 0; i < 16 ; i++){
-//        if(c == ASCII_Table[i]){
-//            return 1;
-//        }
-//    }
-//    return 0;
-//}
 
 void initialize() 
 {
     
-    ANSEL = 0; // disable analog input
-    ANSELH = 0;
-    nRBPU = 0; // enable inherent pull up resistor for PORTB
-    TRISB = 0xff; // set PORTB as input
-    TRISA = 0; // set PORTA as output, for debugging purpose
-    TRISD = 0; //Make RD3:0 outputs (LEDs connected to RD3:0)
-    TRISE = 0;
-
-// -------------------------------------------------------------- UART
-
-    CREN = 1; // Enable receive side of UART
-    SPEN = 1; SYNC = 0; TXEN = 1; //Enable transmit side of UART for asynchronous operation
-    BRG16 = 1; BRGH=1; SPBRGH = 0; SPBRG = 25; //Config UART for 9600 Baud
-
-// -------------------------------------------------------------- timer1
-    TMR1GE=0;   TMR1ON = 1;         //Enable TIMER1 (See Fig. 6-1 TIMER1 Block Diagram in PIC16F887 Data Sheet)
-    TMR1CS = 0;                     //Select internal clock whose frequency is Fosc/4 = 2 MHz, where Fosc = 8 MHz
-    T1CKPS1 = 0; T1CKPS0 = 0;       //Set prescale to divide by 1 yielding a clock tick period of 0.5 microseconds
-                                    // 1 sec = 2000000 ticks
-                            /*  From Section 6.12 of PIC16F887 Datasheet:
-                                    bit 5-4 T1CKPS<1:0>: Timer1 Input Clock Prescale Select bits
-                                    11 = 1:8 Prescale Value
-                                    10 = 1:4 Prescale Value
-                                    01 = 1:2 Prescale Value
-                                    00 = 1:1 Prescale Value
-                            */
-// -------------------------------------------------------------- comparator module
-    CCP1M3 = 0;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
-                                //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
-                                //See REGISTER 11-1 datasheet
-    TRISC2 = 0;                 //Make CCP1 pin an output.
-    CCP1IF = 0; 
-    CCP1IE = 1;                 //Unmask (enable) Compare Interrupt from CCP1 (Interrupt when CCP1IF flag is set to 1)
-
+    general_init();
+    
  // --------------------------------------------------------------- set this to 12-bit mode
-    lcd_init();
     I2C_Initialize();
     configTemSensor(SENSEOR_A);
- // --------------------------------------------------------------- RB interrupt initialization
-//    IOCB0 = 1;
-//    RBIF = 0;
-    // RBIE = 1;
- // ---------------------------------------------------------------
+    
     PEIE = 1;                   //Enable all peripheral interrupts 
     GIE = 1;                    //Globally Enable all interrupts 
 }
@@ -135,8 +92,6 @@ void interrupt interrupt_handler(void)
     //     RBIF = 0;
     // }
 }
-
-
 
 
 void testTemperature(unsigned char TMP101_address) {
@@ -191,7 +146,8 @@ void testTemperature(unsigned char TMP101_address) {
     lcd_putch(hundredth_char + 0x30);
     lcd_putch(0xdf);
     lcd_putch('C');
-    
+// delay    
+    DelayMs(100);
 }
 
 void configTemSensor(char TMP101_address) {

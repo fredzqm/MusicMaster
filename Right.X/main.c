@@ -23,8 +23,6 @@
 #include "../lcd4bits.h"
 #include "../lib.h"
 
-#define SELECT_GAME 1
-#define ENTER_DATA 2
 void selectGame();
 void enterData();
 
@@ -32,15 +30,12 @@ void enterData();
 void initialize();
 void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
 void configTemSensor(char TMP101_address);
-void UpdateKey(void); //Function prototypes for the three functions.
 char getKeyCharacter();
 unsigned int ADC_convert(); // Function prototypes
 
 // ---- various of state
 // int validChar(char);
-char mode;
-int note, width, nextRising;
-int keyStatus;
+int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
 
@@ -48,17 +43,24 @@ void main(void) {
     initialize();
     mode = ENTER_DATA;
     mode = 0;
+
     while (1) {
-        if (mode == SELECT_GAME){
-            selectGame();
-        } else if (mode == ENTER_DATA){
-            enterData();
-        } else {
-            playNote();
+        switch(mode) {
+            case SELECT_GAME:
+                selectGame();
+                break;
+            case PLAY_NOTE:
+            case TEMP_TEST:
+                playNote();
+                break;
+            case RESUT_DISPALY:
+                break;
+            case ENTER_DATA;
+                enterData();
+                break;
         }
     }
 }
-
 
 
 void selectGame() {
@@ -90,7 +92,6 @@ void selectGame() {
 }
 
 void enterData() {
-    int i;
     char input = InChar();
     lcd_clear();
     lcd_putch(input);
@@ -100,29 +101,11 @@ void enterData() {
     lcd_putch(toHex(input/16));
     lcd_putch(toHex(input));
     if (input == 0x0d) {
-        int j;
-        for (j = 0; j < 0; j++)
-            OutChar(0x20);
         OutChar('\n');
         OutChar('\r');
     } else {
         OutChar(input);
     }
-}
-
-
-
-
-void UpdateKey() {
-    // keyStatus 16bit represent *741 0852 #693 DCBA
-    PORTA = 0b1110; //Check first COL for key depression
-    keyStatus = (((int)PORTB << 12) & 0xf000 ) ;
-    PORTA = 0b1101; //Check second COL for key depression
-    keyStatus |= ((int)PORTB << 8) & 0x0f00;
-    PORTA = 0b1011; //Check third COL for key depression
-    keyStatus |= (PORTB << 4) & 0x00f0;
-    PORTA = 0b0111; //Check fourth COL for key depression
-    keyStatus |= PORTB & 0x000f;
 }
 
 unsigned int ADC_convert() {
@@ -131,51 +114,11 @@ unsigned int ADC_convert() {
     return (unsigned int) ADRESH * 256 + ADRESL; // converted 10-bit value (0 -> 1023)
 }
 
-//int validChar(char c) {
-//    for (int i = 0; i < 16 ; i++){
-//        if(c == ASCII_Table[i]){
-//            return 1;
-//        }
-//    }
-//    return 0;
-//}
-
 void initialize() 
-{
-    
-    ANSEL = 0; // disable analog input
-    ANSELH = 0;
-    nRBPU = 0; // enable inherent pull up resistor for PORTB
-    TRISB = 0xff; // set PORTB as input
-    TRISA = 0; // set PORTA as output, for debugging purpose
-    TRISD = 0; //Make RD3:0 outputs (LEDs connected to RD3:0)
-    TRISE = 0;
-// -------------------------------------------------------------- UART
+{   
+    general_init();
 
-    CREN = 1; // Enable receive side of UART
-    SPEN = 1; SYNC = 0; TXEN = 1; //Enable transmit side of UART for asynchronous operation
-    BRG16 = 1; BRGH= 0; SPBRGH = 0; SPBRG = 51; //Config UART for 9600 Baud
-    // system clock is 8MHz
-// -------------------------------------------------------------- timer1
-    TMR1GE=0;   TMR1ON = 1;         //Enable TIMER1 (See Fig. 6-1 TIMER1 Block Diagram in PIC16F887 Data Sheet)
-    TMR1CS = 0;                     //Select internal clock whose frequency is Fosc/4 = 2 MHz, where Fosc = 8 MHz
-    T1CKPS1 = 0; T1CKPS0 = 0;       //Set prescale to divide by 1 yielding a clock tick period of 0.5 microseconds
-                                    // 1 sec = 2000000 ticks
-                            /*  From Section 6.12 of PIC16F887 Datasheet:
-                                    bit 5-4 T1CKPS<1:0>: Timer1 Input Clock Prescale Select bits
-                                    11 = 1:8 Prescale Value
-                                    10 = 1:4 Prescale Value
-                                    01 = 1:2 Prescale Value
-                                    00 = 1:1 Prescale Value
-                            */
-// -------------------------------------------------------------- comparator module
-    CCP1M3 = 0;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
-                                //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
-                                //See REGISTER 11-1 datasheet
-    TRISC2 = 0;                 //Make CCP1 pin an output.
-    CCP1IF = 0; 
-    CCP1IE = 1;                 //Unmask (enable) Compare Interrupt from CCP1 (Interrupt when CCP1IF flag is set to 1)
-
+// -------------------------------------------------------------- comparator module2
     CCP2M3 = 1;CCP2M2 = 0;CCP2M1 = 1;CCP2M0 = 0;
                                 //Set CCP2 mode for "Compare with toggle on CCP2 pin" 
                                 //See REGISTER 11-1 datasheet
@@ -184,7 +127,7 @@ void initialize()
     CCP2IF = 0; 
     CCP2IE = 1;                 //Unmask (enable) Compare Interrupt from CCP2 (Interrupt when CCP2IF flag is set to 1)
 
-// -------------------------------------------------------------- comparator module
+// -------------------------------------------------------------- A-D converter
     ADON = 1; // Turn on ADC Module
     ADFM = 1; // Right justify result in ADRES = ADRESH:ADRESL registers
     VCFG1 = 0; VCFG0 = 0; // Use VSS and VDD to set conversion range to 0V-5V
@@ -193,11 +136,10 @@ void initialize()
     CHS3 = 0; CHS2 = 1; CHS1 = 0; CHS0 = 0; // set two channel select bits, they won't change during channel switches
 
 // --------------------------------------------------------------- RB interrupt initialization
-//    IOCB0 = 1;
-//    RBIF = 0;
-//    RBIE = 1;
-// --------------------------------------------------------------- LCD
-    lcd_init();
+   IOCB4 = 1;
+   IOCB5 = 1;
+   RBIF = 0;
+   // RBIE = 1;
 
 // ---------------------------------------------------------------
     PEIE = 1;                   //Enable all peripheral interrupts 
