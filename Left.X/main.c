@@ -25,7 +25,7 @@
 #define SENSEOR_A  0x90
 
 void initialize();
-void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
+void testTemperature(unsigned char TMP101_address);
 void configTemSensor(char TMP101_address);
 void UpdateKey(void); //Function prototypes for the three functions.
 char getKeyCharacter();
@@ -41,26 +41,31 @@ void main(void) {
     initialize();
     // Sensor = SENSEOR_A;
     while (1) {
-        // get_temperature(SENSEOR_A, &temp, &temp_rem); // TMP101 with address 1001000
-        char x = getKeyCharacter();
-        note = getNote() / 2;
-        if (note == 0){
-            CCP1M3 = 1;
-        } else {
-            CCP1M3 = 0;
-        }
-        lcd_clear();
-        lcd_goto(0);
-        lcd_putch('0');
-        lcd_putch('x');
-        lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
-        lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
-        lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
-        lcd_putch(keyStatus % 16 - 10 + 'A');
-        lcd_goto(0x40); // go the next line
-        lcd_putch(x);
-        lcd_puts("Sensor: ");
+        char temp_rem, temp;
+        testTemperature(SENSEOR_A); // TMP101 with address 1001000
         DelayMs(100);
+        // int i;
+        // for (i = 0; i < 0; i++){
+        //     char x = getKeyCharacter();
+        //     note = getNote() / 2;
+        //     if (note == 0){
+        //         CCP1M3 = 1;
+        //     } else {
+        //         CCP1M3 = 0;
+        //     }
+        //     lcd_clear();
+        //     lcd_goto(0);
+        //     lcd_putch('0');
+        //     lcd_putch('x');
+        //     lcd_putch((keyStatus>>12)% 16 - 10 + 'A');
+        //     lcd_putch((keyStatus>>8) % 16 - 10 + 'A');
+        //     lcd_putch((keyStatus>>4) % 16 - 10 + 'A');
+        //     lcd_putch(keyStatus % 16 - 10 + 'A');
+        //     lcd_goto(0x40); // go the next line
+        //     lcd_putch(x);
+        //     lcd_puts("Sensor: ");
+        //     DelayMs(100);
+        // }
     }
 }
 
@@ -213,9 +218,9 @@ void initialize()
     CCP1IE = 1;                 //Unmask (enable) Compare Interrupt from CCP1 (Interrupt when CCP1IF flag is set to 1)
 
  // --------------------------------------------------------------- set this to 12-bit mode
-    I2C_Initialize();
-    // configTemSensor(SENSEOR_A);
     lcd_init();
+    I2C_Initialize();
+    configTemSensor(SENSEOR_A);
  // --------------------------------------------------------------- RB interrupt initialization
 //    IOCB0 = 1;
 //    RBIF = 0;
@@ -248,7 +253,8 @@ void interrupt interrupt_handler(void)
 
 
 
-void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem) {
+void testTemperature(unsigned char TMP101_address) {
+    char temp, temp_rem;
     I2C_Start();        // Generate start condition
     while (i2c_WriteTo(TMP101_address)); // Send ?Write to Address? byte to all slaves on I2C bus
                         // This routine returns a nonzero value if the addressed
@@ -263,9 +269,43 @@ void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem) {
     i2c_ReadFrom(TMP101_address);   // Sends ?Read from Address? byte to TMP101
                         // Next two frames from TMP101 contain temperature as
                         // signed 12-bit value
-    *temp = I2C_ReadByte(I2C_MORE);     //get upper 8 bits of temperature (integer portion)
-    *temp_rem = I2C_ReadByte(I2C_LAST); //get lower 4 bits temperature (fractional portion)
+    temp = I2C_ReadByte(I2C_MORE);     //get upper 8 bits of temperature (integer portion)
+    temp_rem = I2C_ReadByte(I2C_LAST); //get lower 4 bits temperature (fractional portion)
     I2C_Stop();         // Generate stop condition
+
+// display result
+    char sign_char, dig0_char, dig1_char, dig2_char, tenth_char, hundredth_char;
+    
+    if (temp & 0x80)            // If temp is negative make sign character ?-?
+    {                           // and negate temp to make it positive.
+        temp = -temp;
+        sign_char = '-';
+    } else {
+        sign_char = '+';
+    }    // Otherwise temp is positive and make sign character ?+?
+    dig0_char = temp % 10;      // Extract temperature as 3 decimal digits
+    temp = temp / 10;
+    dig1_char = temp % 10;
+    temp = temp / 10;
+    dig2_char = temp % 10;
+    temp_rem = 0x0f & (temp_rem >> 4); // put those four bit at lower nibble
+    temp_rem = temp_rem * 10;
+    tenth_char = (temp_rem & 0xf0) / 16;
+    temp_rem = (temp_rem & 0x0f) * 10;
+    hundredth_char = (temp_rem & 0xf0) / 16;
+    lcd_clear();
+    lcd_goto(0);
+    lcd_puts("Temp: ");
+    lcd_putch(sign_char);
+    lcd_putch(dig2_char + 0x30); // Turn decimal digits into ASCII characters before
+    lcd_putch(dig1_char + 0x30); // sending out to the LCD panel.
+    lcd_putch(dig0_char + 0x30);
+    lcd_putch('.');
+    lcd_putch(tenth_char + 0x30);
+    lcd_putch(hundredth_char + 0x30);
+    lcd_putch(0xdf);
+    lcd_putch('C');
+    
 }
 
 void configTemSensor(char TMP101_address) {

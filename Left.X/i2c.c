@@ -152,7 +152,7 @@ unsigned char I2C_SendByte(unsigned char data)
     while(I2C_TRANSMIT_STATUS_BIT);
     SSPIF = 0;
     return I2C_ACKNOWLEDGE_STATUS_BIT;
-}
+} 
 
 /*
  * 	send an address and data direction to the slave
