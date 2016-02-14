@@ -1,9 +1,13 @@
-#include "Left.X/i2c.h"
-#include "Left.X/lcd4bits.h"
+#include "i2c.h"
+#include "lcd4bits.h"
 
 
 void playNote(); // default
 char toHex(char binary);
+int getNote(void);
+unsigned char InChar(void);
+void OutChar(unsigned char);
+char getKeyCharacter();
 
 
 extern int keyStatus, note;
