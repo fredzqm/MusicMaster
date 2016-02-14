@@ -1,7 +1,7 @@
 #include <xc.h>
 #include "i2c.h"
 #include "lcd4bits.h"
-#include "lib.h"
+#include "common.h"
 
 int keyStatus, note;
 char mode, bufRead, bufWrite;

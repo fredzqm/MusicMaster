@@ -21,7 +21,7 @@
 #include <xc.h>
 #include "../i2c.h"
 #include "../lcd4bits.h"
-#include "../lib.h"
+#include "../common.h"
 
 #define SENSEOR_A  0x90
 
