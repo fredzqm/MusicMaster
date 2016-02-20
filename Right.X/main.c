@@ -89,11 +89,8 @@ void selectGame() {
 }
 
 void enterData() {
-    outChar('E');
-    // while (!hasInChar());
+    while (!hasInChar());
     char input = inChar();
-    // while (RCIF == 0);
-    // char input = RCREG;
     lcd_clear();
     lcd_putch(input);
     lcd_goto(0x40);
@@ -106,9 +103,10 @@ void enterData() {
         outChar('\r');
         commandBuf[commandBufIndex] = '\0';
         outString("Entered Command is: ");
-        outString(commandBufIndex);
+        outString(commandBuf);
         outChar('\n');
         outChar('\r');
+        commandBufIndex = 0;
 //        handleCommand(commandBuf);
     } else {
         commandBuf[commandBufIndex] = input;

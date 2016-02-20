@@ -101,8 +101,6 @@ char hasInChar() {
 }
 
 unsigned char inChar() {
-    while (RCIF == 0);
-    return RCREG;
     char ret = buffer[bufRead];
     bufRead = (bufRead + 1 ) % BUFF_SIZE;
     return ret;
@@ -184,7 +182,6 @@ void general_interrupt() {
     }
     if(RCIF == 1)
     {
-        outChar('F');
         buffer[bufWrite] = RCREG;
         bufWrite = (bufWrite + 1 ) % BUFF_SIZE;
         RCIF = 0;
