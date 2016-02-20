@@ -139,6 +139,21 @@ int strcmp(char* a, char* b) {
     return 0;
 }
 
+void itoa(char n, char* s)
+{
+    s[3] = '\0';
+    int i;
+    for (i = 2; i>=0; i--){
+        if (n == 0 & i != 2 ){
+            s[i] = ' ';
+        } else {
+            s[i] = n % 10 + '0';  
+            n /= 10;
+        }
+    }
+}
+
+
 void general_init() {
     ANSEL = 0; // disable analog input
     ANSELH = 0;

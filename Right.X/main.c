@@ -127,12 +127,16 @@ void tokenize(char* command, char** argv) {
 }
 
 void handleCommand(char* command) {
-    char* argv[10];
+    char* argv[20];
     tokenize(command, argv);
+    char x[3];
 
     int i = 0;
     while(argv[i] != 0){
-        outString("\n\rArg: ");
+        outString("\n\rArg");
+        itoa(i, x);
+        outString(x);
+        outString(": ");
         outString(argv[i++]);
     }
    // if (strcmp(command, "create")) {
