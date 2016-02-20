@@ -18,9 +18,6 @@
 #pragma config WRT = OFF        // Flash Program Memory Self Write Enable bits (Write protection off)
 
 
-#include <xc.h>
-#include "../i2c.h"
-#include "../lcd4bits.h"
 #include "../common.h"
 
 void selectGame();
@@ -28,21 +25,21 @@ void enterData();
 
 
 void initialize();
-void get_temperature(unsigned char TMP101_address, char *temp, char *temp_rem);
-void configTemSensor(char TMP101_address);
-char getKeyCharacter();
 unsigned int ADC_convert(); // Function prototypes
+void handleCommand(char* command);
 
 // ---- various of state
 // int validChar(char);
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
+char commandBuf[20];
+char commandBufIndex;
 
 void main(void) {
     initialize();
     mode = ENTER_DATA;
-    mode = 0;
+    // mode = 0;
 
     while (1) {
         switch(mode) {
@@ -92,8 +89,11 @@ void selectGame() {
 }
 
 void enterData() {
-    while (!hasInChar());
-    char input = InChar();
+    outChar('E');
+    // while (!hasInChar());
+    char input = inChar();
+    // while (RCIF == 0);
+    // char input = RCREG;
     lcd_clear();
     lcd_putch(input);
     lcd_goto(0x40);
@@ -102,12 +102,27 @@ void enterData() {
     lcd_putch(toHex(input/16));
     lcd_putch(toHex(input));
     if (input == 0x0d) {
-        OutChar('\n');
-        OutChar('\r');
+        outChar('\n');
+        outChar('\r');
+        commandBuf[commandBufIndex] = '\0';
+        outString("Entered Command is: ");
+        outString(commandBufIndex);
+        outChar('\n');
+        outChar('\r');
+//        handleCommand(commandBuf);
     } else {
-        OutChar(input);
+        commandBuf[commandBufIndex] = input;
+        commandBufIndex++;
+        outChar(input);
     }
 }
+
+//void handleCommand(char* command) {
+//    if (strcmp(command, )) {
+//        
+//    }
+//}
+
 
 unsigned int ADC_convert() {
     GO = 1; // Start conversion (“GO” is the GO/DONE* bit)
@@ -118,6 +133,8 @@ unsigned int ADC_convert() {
 void initialize() 
 {   
     general_init();
+
+    commandBufIndex = 0;
 
 // -------------------------------------------------------------- comparator module2
     CCP2M3 = 1;CCP2M2 = 0;CCP2M1 = 1;CCP2M0 = 0;
@@ -137,10 +154,10 @@ void initialize()
     CHS3 = 0; CHS2 = 1; CHS1 = 0; CHS0 = 0; // set two channel select bits, they won't change during channel switches
 
 // --------------------------------------------------------------- RB interrupt initialization
-   IOCB4 = 1;
-   IOCB5 = 1;
-   RBIF = 0;
-   // RBIE = 1;
+    IOCB4 = 1;
+    IOCB5 = 1;
+    RBIF = 0;
+    // RBIE = 1;
 
 // ---------------------------------------------------------------
     PEIE = 1;                   //Enable all peripheral interrupts 

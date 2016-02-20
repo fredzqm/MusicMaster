@@ -28,7 +28,7 @@ void playNote() {
 
 int getNote(void)
 {
-    UpdateKey();
+    updateKey();
     if ((keyStatus & 0x7330) == 0x7330)
         return 0;
     switch(keyStatus) {
@@ -61,7 +61,7 @@ int getNote(void)
 }
 
 char getKeyCharacter() {
-    UpdateKey();
+    updateKey();
     switch(keyStatus){
         case 0xefff: return '1';
         case 0xfeff: return '2';
@@ -84,7 +84,7 @@ char getKeyCharacter() {
     // return ASCII_Table[i]; //Look up ASCII code of key that was pressed. Return 0x00 (ASCII NULL) if no
 }
 
-void UpdateKey() {
+void updateKey() {
     // keyStatus 16bit represent *741 0852 #693 DCBA
     PORTA = 0b1110; //Check first COL for key depression
     keyStatus = (((int)PORTB << 12) & 0xf000 ) ;
@@ -100,13 +100,22 @@ char hasInChar() {
     return bufRead != bufWrite;
 }
 
-unsigned char InChar() {
+unsigned char inChar() {
+    while (RCIF == 0);
+    return RCREG;
     char ret = buffer[bufRead];
     bufRead = (bufRead + 1 ) % BUFF_SIZE;
     return ret;
 }
 
-void OutChar(unsigned char outchr)
+void outString(char* str) {
+    while(*str != '\0'){
+        outChar(*str++);
+    }
+}
+
+
+void outChar(unsigned char outchr)
 {
     while(TXIF == 0); //Wait until Transmit Register is Empty (TXIF = 1).
     TXREG = outchr; //Load character to be sent into Transmit register (TXREG).
@@ -173,10 +182,12 @@ void general_interrupt() {
         CCPR1 = note + CCPR1; 
         CCP1IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
     }
-    if(RCIF == 0)
+    if(RCIF == 1)
     {
+        outChar('F');
         buffer[bufWrite] = RCREG;
         bufWrite = (bufWrite + 1 ) % BUFF_SIZE;
         RCIF = 0;
+        RE0 = 1;
     }
 }

@@ -18,9 +18,6 @@
 #pragma config WRT = OFF        // Flash Program Memory Self Write Enable bits (Write protection off)
 
 
-#include <xc.h>
-#include "../i2c.h"
-#include "../lcd4bits.h"
 #include "../common.h"
 
 #define SENSEOR_A  0x90
@@ -125,15 +122,14 @@ void testTemperature(unsigned char TMP101_address) {
 void configTemSensor(char TMP101_address) {
     // char ack = 1;
     // while (ack){ // if ack is high, try this again.
-        I2C_Start();        // Generate start condition
-         while (i2c_WriteTo(TMP101_address)); // Send ?Write to Address? byte to all slaves on I2C bus
+    I2C_Start();        // Generate start condition
+    while (i2c_WriteTo(TMP101_address)); // Send ?Write to Address? byte to all slaves on I2C bus
                             // This routine returns a nonzero value if the addressed
                             // TMP101 fails to acknowledge after the master sends out
                             // the ?Write to address? byte, so the program will hang up in
                             // this loop if there is no response from the TMP101,
                             // repeating this step until an acknowledge is received.
-        RA5 = I2C_SendByte(0x01); // Sets pointer register to 01 (configure register) for
-    // }
+    RA5 = I2C_SendByte(0x01); // Sets pointer register to 01 (configure register) for
                         //the addressed TMP101.  (See Table 2 TMP101 Datasheet)
     I2C_SendByte(0x60); // Sets pointer register to 00 (configure register) for
     I2C_Stop();         // Generate stop condition

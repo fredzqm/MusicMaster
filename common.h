@@ -7,13 +7,13 @@ void playNote(); // default
 char toHex(char binary);
 int getNote(void);
 char hasInChar();
-unsigned char InChar(void);
-void OutChar(unsigned char);
+unsigned char inChar(void);
+void outChar(unsigned char);
+void outString(char* str);
 char getKeyCharacter();
-void UpdateKey(void);
+void updateKey(void);
 void general_init();
 void general_interrupt();
-
 enum Mode 
 { 
   SELECT_GAME, 
