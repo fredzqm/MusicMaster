@@ -33,7 +33,7 @@ void handleCommand(char* command);
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
-char commandBuf[20];
+char commandBuf[50];
 char commandBufIndex;
 
 void main(void) {
@@ -99,15 +99,12 @@ void enterData() {
     lcd_putch(toHex(input/16));
     lcd_putch(toHex(input));
     if (input == 0x0d) {
-        outChar('\n');
-        outChar('\r');
         commandBuf[commandBufIndex] = '\0';
-        outString("Entered Command is: ");
+        outString("\n\rEntered Command is: ");
         outString(commandBuf);
-        outChar('\n');
-        outChar('\r');
         commandBufIndex = 0;
-//        handleCommand(commandBuf);
+        handleCommand(commandBuf);
+        outString("\n\rMusic Master >:");
     } else {
         commandBuf[commandBufIndex] = input;
         commandBufIndex++;
@@ -115,11 +112,33 @@ void enterData() {
     }
 }
 
-//void handleCommand(char* command) {
-//    if (strcmp(command, )) {
-//        
-//    }
-//}
+void tokenize(char* command, char** argv) {
+    char* itr = command;
+    int i = 1;
+    argv[0] = itr;
+    while(*itr != '\0'){
+        if (*itr == ' '){
+            *itr = '\0';
+            argv[i++] = itr+1;
+        }
+        itr++;
+    }
+    argv[i] = '\0';
+}
+
+void handleCommand(char* command) {
+    char* argv[10];
+    tokenize(command, argv);
+
+    int i = 0;
+    while(argv[i] != 0){
+        outString("\n\rArg: ");
+        outString(argv[i++]);
+    }
+   // if (strcmp(command, "create")) {
+       
+   // }
+}
 
 
 unsigned int ADC_convert() {

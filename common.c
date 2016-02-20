@@ -129,6 +129,15 @@ char toHex(char binary){
     }
 }
 
+int strcmp(char* a, char* b) {
+    while(*a == *b){
+        if (*a == '\0')
+            return 1;
+        a++;
+        b++;
+    }
+    return 0;
+}
 
 void general_init() {
     ANSEL = 0; // disable analog input

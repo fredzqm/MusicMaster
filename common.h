@@ -14,6 +14,8 @@ char getKeyCharacter();
 void updateKey(void);
 void general_init();
 void general_interrupt();
+int strcmp(char* a, char* b);
+
 enum Mode 
 { 
   SELECT_GAME, 
