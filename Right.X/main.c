@@ -19,14 +19,18 @@
 
 
 #include "../common.h"
+#define EEPROMA  0xA0
+#define EEPROMB  0xA1
 
 void selectGame();
 void enterData();
 
-
 void initialize();
 unsigned int ADC_convert(); // Function prototypes
+void tokenize(char* command, char** argv);
 void handleCommand(char* command);
+char writeEEPROM(unsigned char EEPROMAddr, int address, char data);
+char readEEPROM(unsigned char EEPROMAddr, int address);
 
 // ---- various of state
 // int validChar(char);
@@ -144,6 +148,44 @@ void handleCommand(char* command) {
    // }
 }
 
+char readEEPROM(unsigned char EEPROMAddr, int address) {
+    char data;
+    I2C_Start();        // Generate start condition
+    while (i2c_WriteTo(EEPROMAddr)); // Send ?Write to Address? byte to all slaves on I2C bus
+                        // This routine returns a nonzero value if the addressed
+                        // TMP101 fails to acknowledge after the master sends out
+                        // the ?Write to address? byte, so the program will hang up in
+                        // this loop if there is no response from the TMP101,
+                        // repeating this step until an acknowledge is received.
+
+    I2C_SendByte((char)(address >> 8)); // higher byte of address
+    I2C_SendByte((char)address); // lower byte of address
+
+    I2C_Restart();      // Generate restart condition between write and read operations
+    i2c_ReadFrom(EEPROMAddr);   // Sends ?Read from Address? byte to TMP101
+                        // Next two frames from TMP101 contain temperature as
+                        // signed 12-bit value
+    data = I2C_ReadByte(I2C_MORE);     //get upper 8 bits of temperature (integer portion)
+    I2C_Stop();         // Generate stop condition
+    return data;
+}
+
+char writeEEPROM(unsigned char EEPROMAddr, int address, char data) {
+    char ack;
+    I2C_Start();        // Generate start condition
+    while (i2c_WriteTo(EEPROMAddr)); // Send ?Write to Address? byte to all slaves on I2C bus
+                        // This routine returns a nonzero value if the addressed
+                        // TMP101 fails to acknowledge after the master sends out
+                        // the ?Write to address? byte, so the program will hang up in
+                        // this loop if there is no response from the TMP101,
+                        // repeating this step until an acknowledge is received.
+
+    I2C_SendByte((char)(address >> 8)); // higher byte of address
+    I2C_SendByte((char)address); // lower byte of address
+    ack = I2C_SendByte(data);   // set data to EEPROM
+    I2C_Stop();         // Generate stop condition
+    return data;
+}
 
 unsigned int ADC_convert() {
     GO = 1; // Start conversion (“GO” is the GO/DONE* bit)
