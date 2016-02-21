@@ -39,8 +39,7 @@ enum promptMode {
     SONG,
     PLAYSONG
 };
-// ---- various of state
-// int validChar(char);
+
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
@@ -52,15 +51,15 @@ void main(void) {
     initialize();
     mode = ENTER_DATA;
     promptMode = COMMAND;
-
+    mode = GAME;
     while (1) {
         switch(mode) {
             case SELECT_GAME:
                 selectGame();
                 break;
-            case PLAY_NOTE:
+            case GAME:
             case TEMP_TEST:
-                playNote();
+                pianoMode();
                 break;
             case RESUT_DISPALY:
                 break;
@@ -132,13 +131,9 @@ void enterData() {
         inputBuf[bufCount] = '\0';
         switch (promptMode) {
             case COMMAND:
-                outString("\n\rEntered Command is: ");
-                outString(inputBuf);
                 handleCommand(inputBuf);
                 break;
             case SONG:
-                outString("\n\rEntered note is: ");
-                outString(inputBuf);
                 handleNote(inputBuf);
                 break;
             case PLAYSONG:
@@ -254,17 +249,17 @@ void handleNote(char* noteSequence) {
     char tbuff[11];
     tokenize(noteSequence, notes);
     char i = 0, code;
-    while(notes[i] != 0){
-        outString("\n\rNote");
-        itoa(i, tbuff); outString(tbuff);
-        outString(": ");
-        outString(notes[i]);
-        outString("  Encoded as: 0x");
-        code = encode(notes[i]);
-        outChar(toHex(code>>4));
-        outChar(toHex(code));
-        i++;
-    }
+    // while(notes[i] != 0){
+    //     outString("\n\rNote");
+    //     itoa(i, tbuff); outString(tbuff);
+    //     outString(": ");
+    //     outString(notes[i]);
+    //     outString("  Encoded as: 0x");
+    //     code = encode(notes[i]);
+    //     outChar(toHex(code>>4));
+    //     outChar(toHex(code));
+    //     i++;
+    // }
     while(1) {
         outString("\n\rSave this line? (Yes[y], No[n]) :");
         while (!hasInChar());

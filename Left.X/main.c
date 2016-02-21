@@ -36,8 +36,8 @@ void main(void) {
         switch(mode) {
             case SELECT_GAME:
                 break;
-            case PLAY_NOTE:
-                playNote();
+            case GAME:
+                pianoMode();
                 break;
             case TEMP_TEST:
                 testTemperature(SENSEOR_A); // TMP101 with address 1001000

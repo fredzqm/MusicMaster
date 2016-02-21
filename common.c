@@ -5,14 +5,9 @@ int timerCounter;
 char mode, bufRead, bufWrite;
 char buffer[BUFF_SIZE];
 
-void playNote() {
+void pianoMode() {
     char x = getKeyCharacter();
-    note = getNote() / 2;
-    if (note == 0){
-        CCP1M3 = 1;
-    } else {
-        CCP1M3 = 0;
-    }
+
     lcd_clear();
     lcd_puts("0x");
     lcd_putch(toHex(keyStatus>>12));
@@ -30,39 +25,51 @@ void playNote() {
     lcd_putch(toHex(curTime>>8));
     lcd_putch(toHex(curTime>>4));
     lcd_putch(toHex(curTime));
-    
-    DelayMs(100);
+    // DelayMs(100);
+    playNote(keyStatus, 100);
 }
 
-int getNote(void)
+void playNote(int keyEncoding, long length) {
+    long clock = getTime();
+    note = getNote(keyEncoding);
+    if (note == 0){
+        CCP1M3 = 1;
+    } else {
+        CCP1M3 = 0;
+    }
+    clock += length;
+    while(getTime() - clock < 0);
+}
+
+int getNote(int keyEncoding)
 {
     updateKey();
-    if ((keyStatus & 0x7330) == 0x7330)
+    if ((keyEncoding & 0x7330) == 0x7330)
         return 0;
-    switch(keyStatus) {
-        case 0x6fff: return 3058; // 1A
-        case 0x7eff: return 2724; // 2A
-        case 0x7fef: return 2427; // 3A
-        case 0x5fff: return 2291; // 4A
-        case 0x7dff: return 2041; // 5A
-        case 0x7fdf: return 1818; // 6A
-        case 0x3fff: return 1620; // 7A
+    switch(keyEncoding) {
+        case 0x6fff: return 1529; // 1A
+        case 0x7eff: return 1362; // 2A
+        case 0x7fef: return 1214; // 3A
+        case 0x5fff: return 1145; // 4A
+        case 0x7dff: return 1021; // 5A
+        case 0x7fdf: return 909; // 6A
+        case 0x3fff: return 810; // 7A
 
-        case 0xefff: return 1529; // 1
-        case 0xfeff: return 1362; // 2
-        case 0xffef: return 1213; // 3
-        case 0xdfff: return 1145; // 4
-        case 0xfdff: return 1020; // 5
-        case 0xffdf: return 909; // 6
-        case 0xbfff: return 810; // 7
+        case 0xefff: return 765; // 1
+        case 0xfeff: return 681; // 2
+        case 0xffef: return 607; // 3
+        case 0xdfff: return 573; // 4
+        case 0xfdff: return 510; // 5
+        case 0xffdf: return 455; // 6
+        case 0xbfff: return 405; // 7
 
-        case 0xef7f: return 764; // 1B
-        case 0xfe7f: return 681; // 2B
-        case 0xff6f: return 607; // 3B
-        case 0xdf7f: return 573; // 4B
-        case 0xfd7f: return 510; // 5B
-        case 0xff5f: return 454; // 6B
-        case 0xbf7f: return 405; // 7B
+        case 0xef7f: return 382; // 1B
+        case 0xfe7f: return 341; // 2B
+        case 0xff6f: return 303; // 3B
+        case 0xdf7f: return 286; // 4B
+        case 0xfd7f: return 255; // 5B
+        case 0xff5f: return 227; // 6B
+        case 0xbf7f: return 202; // 7B
 
         default: return 0; // not found
     }

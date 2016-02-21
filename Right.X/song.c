@@ -49,7 +49,6 @@ void endSong() {
 	eeprom_write(curSongOffset, END_SONG);
 }
 
-
 char encode(char* sym) {
 	char tone;
 	if (*sym == '*'){
@@ -79,6 +78,35 @@ char encode(char* sym) {
 	return tone;
 }
 
+
+	switch(keyEncoding) {
+        case 0x6fff: return 3058; // 1A
+        case 0x7eff: return 2724; // 2A
+        case 0x7fef: return 2427; // 3A
+        case 0x5fff: return 2291; // 4A
+        case 0x7dff: return 2041; // 5A
+        case 0x7fdf: return 1818; // 6A
+        case 0x3fff: return 1620; // 7A
+
+        case 0xefff: return 1529; // 1
+        case 0xfeff: return 1362; // 2
+        case 0xffef: return 1213; // 3
+        case 0xdfff: return 1145; // 4
+        case 0xfdff: return 1020; // 5
+        case 0xffdf: return 909; // 6
+        case 0xbfff: return 810; // 7
+
+        case 0xef7f: return 764; // 1B
+        case 0xfe7f: return 681; // 2B
+        case 0xff6f: return 607; // 3B
+        case 0xdf7f: return 573; // 4B
+        case 0xfd7f: return 510; // 5B
+        case 0xff5f: return 454; // 6B
+        case 0xbf7f: return 405; // 7B
+
+        default: return 0; // not found
+    }
+}
 
 Note decode(char note) {
 	Note n;

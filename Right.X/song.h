@@ -6,7 +6,7 @@
 #define END_SONG 0
 
 typedef struct {
-	int period;
+	int keyEncoding;
 	char length;
 	char name[3];
 } Note;

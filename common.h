@@ -4,9 +4,10 @@
 
 #define BUFF_SIZE 20
 
-void playNote(); // default
+void pianoMode(); // default
 char toHex(char binary);
-int getNote(void);
+int getNote(int keyEncoding);
+void playNote(int keyEncoding, long length);
 char hasInChar();
 unsigned char inChar(void);
 void outChar(unsigned char);
@@ -22,7 +23,7 @@ long getTime();
 enum Mode 
 { 
   SELECT_GAME, 
-  PLAY_NOTE,
+  GAME,
   TEMP_TEST,
   RESUT_DISPALY,
   ENTER_DATA
