@@ -215,10 +215,6 @@ void handleCommand(char* command) {
                 openSong(i);
                 char read = readSong();
                 while(read != END_SONG) {
-                    outString("\n\rEncoding: 0x");
-                    outChar(toHex(read>>4));
-                    outChar(toHex(read));
-                    outChar(' ');
                     outString(decode(read).name);
                     outChar(' ');
                     read = readSong();
