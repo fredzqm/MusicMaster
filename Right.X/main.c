@@ -19,6 +19,8 @@
 
 
 #include "../common.h"
+#include "song.h"
+
 #define EEPROMA  0xA0
 #define EEPROMB  0xA1
 
@@ -29,22 +31,28 @@ void initialize();
 unsigned int ADC_convert(); // Function prototypes
 void tokenize(char* command, char** argv);
 void handleCommand(char* command);
-char writeEEPROM(unsigned char EEPROMAddr, int address, char data);
-char readEEPROM(unsigned char EEPROMAddr, int address);
 
+enum promptMode {
+    COMMAND,
+    SONG,
+    CONFIRM
+};
 // ---- various of state
 // int validChar(char);
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
 char commandBuf[50];
-char commandBufIndex;
+char buffCount;
+char promptMode;
 
 void main(void) {
     initialize();
     mode = ENTER_DATA;
-    // mode = 0;
+    promptMode = COMMAND;
 
+    // mode = 0;
+    
     while (1) {
         switch(mode) {
             case SELECT_GAME:
@@ -102,17 +110,34 @@ void enterData() {
     lcd_putch('x');
     lcd_putch(toHex(input/16));
     lcd_putch(toHex(input));
-    if (input == 0x0d) {
-        commandBuf[commandBufIndex] = '\0';
-        outString("\n\rEntered Command is: ");
-        outString(commandBuf);
-        commandBufIndex = 0;
-        handleCommand(commandBuf);
-        outString("\n\rMusic Master >:");
-    } else {
-        commandBuf[commandBufIndex] = input;
-        commandBufIndex++;
-        outChar(input);
+    switch (promptMode) {
+        case COMMAND:
+            if (input == 0x0d) {
+                commandBuf[buffCount] = '\0';
+                outString("\n\rEntered Command is: ");
+                outString(commandBuf);
+                buffCount = 0;
+                handleCommand(commandBuf);
+                outString("\n\rMusic Master >:");
+            } else if (input == 0x08) {
+                if (buffCount > 0){
+                    buffCount--;
+                    outChar(0x08);
+                    outChar(' ');
+                    outChar(0x08);
+                }
+            } else {
+                commandBuf[buffCount] = input;
+                buffCount++;
+                outChar(input);
+            }
+            break;
+        case SONG:
+
+            break;
+        case CONFIRM:
+
+            break;
     }
 }
 
@@ -120,34 +145,72 @@ void tokenize(char* command, char** argv) {
     char* itr = command;
     int i = 1;
     argv[0] = itr;
-    while(*itr != '\0'){
-        if (*itr == ' '){
-            *itr = '\0';
-            argv[i++] = itr+1;
+    while(1){
+        while (*itr != ' ' && *itr != '\0')
+            itr++;
+        if (*itr == '\0') {
+            break;
         }
-        itr++;
+        *itr++ = '\0';
+        while (*itr == ' ' && *itr != '\0')
+            itr++;
+        if (*itr == '\0') {
+            break;
+        }
+        argv[i++] = itr;
     }
     argv[i] = '\0';
 }
 
 void handleCommand(char* command) {
     char* argv[20];
+    char tbuff[11];
     tokenize(command, argv);
-    char x[3];
-
     int i = 0;
+
     while(argv[i] != 0){
         outString("\n\rArg");
-        itoa(i, x);
-        outString(x);
+        itoa(i, tbuff);outString(tbuff);
         outString(": ");
         outString(argv[i++]);
     }
-   // if (strcmp(command, "create")) {
-       
-   // }
+    if (strcmp(command, "touch")) {
+        for (i = 0; i < MAX_NUM_OF_SONG; i++){
+            if (!existsSong(i)){
+                setSongName(i, argv[1]);
+                openSong(i);
+                outString("\n\rCreate song: ");
+                outString(argv[1]);
+                outString("Start enter notes: ");
+                promptMode = SONG;
+                return;
+            }
+        }
+        outString("\n\rNot enough space for songs. Use rm <Song Name> to free some space.");
+    } else if (strcmp(command, "ls")) {
+        for (i = 0; i < MAX_NUM_OF_SONG; i++){
+            outString("\n\rSong ");
+            itoa(i, tbuff);outString(tbuff);
+            outString(": ");
+            getSongName(i, tbuff); outString(tbuff);
+            return;
+        }
+        outString("\n\rThis song is not found");
+    } else if (strcmp(command, "rm")) {
+        for (i = 0; i < MAX_NUM_OF_SONG; i++){
+            getSongName(i, tbuff);
+            if (strcmp(argv[1], tbuff)){
+                setSongName(i, "");
+                outString("\n\rDelete song: ");
+                outString(argv[1]);
+                return;
+            }
+        }
+        outString("\n\rThis song is not found");
+    }
 }
 
+/*
 char readEEPROM(unsigned char EEPROMAddr, int address) {
     char data;
     I2C_Start();        // Generate start condition
@@ -186,6 +249,7 @@ char writeEEPROM(unsigned char EEPROMAddr, int address, char data) {
     I2C_Stop();         // Generate stop condition
     return data;
 }
+*/
 
 unsigned int ADC_convert() {
     GO = 1; // Start conversion (“GO” is the GO/DONE* bit)
@@ -197,7 +261,7 @@ void initialize()
 {   
     general_init();
 
-    commandBufIndex = 0;
+    buffCount = 0;
 
 // -------------------------------------------------------------- comparator module2
     CCP2M3 = 1;CCP2M2 = 0;CCP2M1 = 1;CCP2M0 = 0;

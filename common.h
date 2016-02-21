@@ -1,3 +1,4 @@
+#include <xc.h>
 #include "i2c.h"
 #include "lcd4bits.h"
 

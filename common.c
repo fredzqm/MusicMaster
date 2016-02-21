@@ -1,6 +1,3 @@
-#include <xc.h>
-#include "i2c.h"
-#include "lcd4bits.h"
 #include "common.h"
 
 int keyStatus, note;
@@ -184,7 +181,7 @@ void general_init() {
                                     00 = 1:1 Prescale Value
                             */
 // -------------------------------------------------------------- comparator module
-    CCP1M3 = 0;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
+    CCP1M3 = 1;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
                                 //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
                                 //See REGISTER 11-1 datasheet
     TRISC2 = 0;                 //Make CCP1 pin an output.
