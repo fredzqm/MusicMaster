@@ -50,61 +50,75 @@ void endSong() {
 
 char encode(char* sym) {
 	char tone;
-	if (*sym == '#'){
-		tone = 0x00;
+	if (*sym == '*'){
+		tone = 0x00; // low octate, 0b--00 ----
 		sym++;
-	} else if (*sym == '*'){
-		tone = 0x10;
+	} else if (*sym == '#'){
+		tone = 0x20; // high octate, 0b--10 ----
 		sym++;
 	} else {
-		tone = 0x08;
+		tone = 0x10; // middle octate, 0b--01 ----
 	}
 	char length = *sym++ - '0';
 	if (length < 1 || length > 7)
 		return END_SONG; // error
 	tone += length;
 	if (*sym == '\\' && *(sym+1) == '\0'){
-		tone |= 0x00; // 32th note, 1/2 sec
+		tone |= 0x00; // 32th note, 1/2 sec, 0b00-- ----
 	} else if (*sym == '\0'){
-		tone |= 0x40; // 16th note, 1 sec
+		tone |= 0x40; // 16th note, 1 sec, 0b01-- ----
 	} else if (*sym == '-' && *(sym+1) == '\0'){
-		tone |= 0x80; // 8th note, 2 sec
+		tone |= 0x80; // 8th note, 2 sec, 0b10-- ----
 	} else if (*sym == '-' && *(sym+1) == '-' && *(sym+2) == '\0'){
-		tone |= 0xc0; // 4th note, 4 sec
+		tone |= 0xc0; // 4th note, 4 sec, 0b11-- ----
 	} else {
 		return END_SONG;
 	}
 	return tone;
 }
 
-//Note decode(char note) {
-//	Note n;
-//
-//	switch(keyStatus) {
-//        case 0x6fff: return 3058; // *1 (1A)
-//        case 0x7eff: return 2724; // *2 (2A)
-//        case 0x7fef: return 2427; // *3 (3A)
-//        case 0x5fff: return 2291; // *4 (4A)
-//        case 0x7dff: return 2041; // *5 (5A)
-//        case 0x7fdf: return 1818; // *6 (6A)
-//        case 0x3fff: return 1620; // *7 (7A)
-//
-//        case 0xefff: return 1529; // 1
-//        case 0xfeff: return 1362; // 2
-//        case 0xffef: return 1213; // 3
-//        case 0xdfff: return 1145; // 4
-//        case 0xfdff: return 1020; // 5
-//        case 0xffdf: return 909; // 6
-//        case 0xbfff: return 810; // 7
-//
-//        case 0xef7f: return 764; // #1 (1B)
-//        case 0xfe7f: return 681; // #2 (2B)
-//        case 0xff6f: return 607; // #3 (3B)
-//        case 0xdf7f: return 573; // #4 (4B)
-//        case 0xfd7f: return 510; // #5 (5B)
-//        case 0xff5f: return 454; // #6 (6B)
-//        case 0xbf7f: return 405; // #7 (7B)
-//
-//        default: return 0; // not found
-//    }
-//}
+Note decode(char note) {
+	Note n;
+	switch(note & 0xc0){
+		case 0x00:
+			n.length = 1;
+			break;
+		case 0x40:
+			n.length = 2; // this should be around 1 sec
+			break;
+		case 0x80:
+			n.length = 4;
+			break;
+		case 0xc0:
+			n.length = 8;
+			break;
+	}
+	switch(note & 0x37) {
+       case 0x01: n.period = 3058; break; // *1 (1A)
+       case 0x02: n.period = 2724; break; // *2 (2A)
+       case 0x03: n.period = 2427; break; // *3 (3A)
+       case 0x04: n.period = 2291; break; // *4 (4A)
+       case 0x05: n.period = 2041; break; // *5 (5A)
+       case 0x06: n.period = 1818; break; // *6 (6A)
+       case 0x07: n.period = 1620; break; // *7 (7A)
+
+       case 0x11: n.period = 1529; break; // 1
+       case 0x12: n.period = 1362; break; // 2
+       case 0x13: n.period = 1213; break; // 3
+       case 0x14: n.period = 1145; break; // 4
+       case 0x15: n.period = 1020; break; // 5
+       case 0x16: n.period = 909;  break; // 6
+       case 0x17: n.period = 810;  break; // 7
+
+       case 0x21: n.period = 764;  break; // #1 (1B)
+       case 0x22: n.period = 681;  break; // #2 (2B)
+       case 0x23: n.period = 607;  break; // #3 (3B)
+       case 0x24: n.period = 573;  break; // #4 (4B)
+       case 0x25: n.period = 510;  break; // #5 (5B)
+       case 0x26: n.period = 454;  break; // #6 (6B)
+       case 0x27: n.period = 405;  break; // #7 (7B)
+
+       default: n.period = END_SONG; // not found
+   }
+   return n;
+}

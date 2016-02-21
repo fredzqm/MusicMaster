@@ -128,7 +128,6 @@ void outChar(unsigned char outchr)
 }
 
 long getTime() {
-    // return (long)timerCounter << 16 + (long)TMR1;
     return ( (long)timerCounter <<16) + TMR1;
 }
 
@@ -193,7 +192,7 @@ void general_init() {
     TMR1IF = 0;
     TMR1IE = 1;
 // -------------------------------------------------------------- comparator module
-    CCP1M3 = 1;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
+    CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
                                 //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
                                 //See REGISTER 11-1 datasheet
     TRISC2 = 0;                 //Make CCP1 pin an output.

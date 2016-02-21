@@ -50,11 +50,9 @@ char promptMode;
 
 void main(void) {
     initialize();
-    mode = PLAY_NOTE;
+    mode = ENTER_DATA;
     promptMode = COMMAND;
 
-    // mode = 0;
-    
     while (1) {
         switch(mode) {
             case SELECT_GAME:
@@ -232,10 +230,23 @@ void handleCommand(char* command) {
 }
 
 void handleNote(char* noteSequence) {
-    char* argv[25];
+    char* notes[25];
     char tbuff[11];
-    tokenize(noteSequence, argv);
-    
+    tokenize(noteSequence, notes);
+    char i = 0, code;
+    while(notes[i] != 0){
+        outString("\n\rNote");
+        itoa(i, tbuff); outString(tbuff);
+        outString(": ");
+        outString(notes[i]);
+        outString("  Encoded as: 0x");
+        code = encode(notes[i]);
+        outChar(toHex(code>>4));
+        outChar(toHex(code));
+        writeSong(code);
+        i++;
+    }
+
 }
 
 /*
