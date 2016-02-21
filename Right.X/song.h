@@ -8,6 +8,7 @@
 typedef struct {
 	int period;
 	char length;
+	char name[3];
 } Note;
 
 char existsSong(char songID);

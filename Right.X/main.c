@@ -37,7 +37,7 @@ void handleNote(char* noteSequence);
 enum promptMode {
     COMMAND,
     SONG,
-    CONFIRM
+    PLAYSONG
 };
 // ---- various of state
 // int validChar(char);
@@ -110,7 +110,7 @@ void enterData() {
             case SONG:
                 outString("\n\r>:");
                 break;
-            case CONFIRM:
+            case PLAYSONG:
 
                 break;
          }
@@ -141,7 +141,7 @@ void enterData() {
                 outString(inputBuf);
                 handleNote(inputBuf);
                 break;
-            case CONFIRM:
+            case PLAYSONG:
 
                 break;
         }
@@ -207,6 +207,22 @@ void handleCommand(char* command) {
             }
         }
         outString("\n\rNot enough space for songs. Use rm <Song Name> to free some space.");
+    } else if (strcmp(command, "cat")) {
+        for (i = 0; i < MAX_NUM_OF_SONG; i++){
+            getSongName(i, tbuff);
+            if (strcmp(argv[1], tbuff)){
+                outString("\n\rDetails of ");
+                outString(argv[1]);
+                outString(":\n\r");
+                openSong(i);
+                char read = readSong();
+                while (read != END_SONG) {
+                    outString(decode(read).name);
+                    outChar(' ');
+                }
+            }
+        }
+        outString("\n\rThis song is not found");
     } else if (strcmp(command, "ls")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             outString("\n\rSong ");
@@ -226,7 +242,11 @@ void handleCommand(char* command) {
             }
         }
         outString("\n\rThis song is not found");
-    }
+    } else if (strcmp(command, "clear")) {
+        for (i = 0; i < MAX_NUM_OF_SONG; i++){
+            setSongName(i, "");
+        }
+    } 
 }
 
 void handleNote(char* noteSequence) {
@@ -243,10 +263,34 @@ void handleNote(char* noteSequence) {
         code = encode(notes[i]);
         outChar(toHex(code>>4));
         outChar(toHex(code));
-        writeSong(code);
         i++;
     }
-
+    while(1) {
+        outString("\n\rSave this line? (Yes[y], No[n]) :");
+        while (!hasInChar());
+        char input = inChar();
+        outChar(input);
+        if (input == 'y') {
+            while(notes[i] != 0){
+                writeSong(code);
+            }
+            break;
+        } else if (input == 'n') {
+            break;
+        }
+    }
+    while(1) {
+        outString("\n\rEnter another line? (Yes[y], No[n]) :");
+        while (!hasInChar());
+        char input = inChar();
+        outChar(input);
+        if (input == 'y') {
+            break;
+        } else if (input == 'n') {
+            promptMode = COMMAND;
+            break;
+        }
+    }
 }
 
 /*
