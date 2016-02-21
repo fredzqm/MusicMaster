@@ -1,6 +1,7 @@
 #include "common.h"
 
 int keyStatus, note;
+int timerCounter;
 char mode, bufRead, bufWrite;
 char buffer[BUFF_SIZE];
 
@@ -16,10 +17,20 @@ void playNote() {
     lcd_puts("0x");
     lcd_putch(toHex(keyStatus>>12));
     lcd_putch(toHex(keyStatus>>8));
-    lcd_putch(toHex(keyStatus>>12));
+    lcd_putch(toHex(keyStatus>>4));
     lcd_putch(toHex(keyStatus));
     lcd_goto(0x40); // go the next line
-    lcd_putch(x);
+    long curTime = getTime();
+    lcd_puts("Time: 0x");
+    lcd_putch(toHex(curTime>>28));
+    lcd_putch(toHex(curTime>>24));
+    lcd_putch(toHex(curTime>>20));
+    lcd_putch(toHex(curTime>>16));
+    lcd_putch(toHex(curTime>>12));
+    lcd_putch(toHex(curTime>>8));
+    lcd_putch(toHex(curTime>>4));
+    lcd_putch(toHex(curTime));
+    
     DelayMs(100);
 }
 
@@ -116,6 +127,11 @@ void outChar(unsigned char outchr)
     TXREG = outchr; //Load character to be sent into Transmit register (TXREG).
 }
 
+long getTime() {
+    // return (long)timerCounter << 16 + (long)TMR1;
+    return ( (long)timerCounter <<16) + TMR1;
+}
+
 
 char toHex(char binary){
     binary = binary % 16;
@@ -173,13 +189,9 @@ void general_init() {
     TMR1CS = 0;                     //Select internal clock whose frequency is Fosc/4 = 2 MHz, where Fosc = 8 MHz
     T1CKPS1 = 0; T1CKPS0 = 0;       //Set prescale to divide by 1 yielding a clock tick period of 0.5 microseconds
                                     // 1 sec = 2000000 ticks
-                            /*  From Section 6.12 of PIC16F887 Datasheet:
-                                    bit 5-4 T1CKPS<1:0>: Timer1 Input Clock Prescale Select bits
-                                    11 = 1:8 Prescale Value
-                                    10 = 1:4 Prescale Value
-                                    01 = 1:2 Prescale Value
-                                    00 = 1:1 Prescale Value
-                            */
+    timerCounter = 0;
+    TMR1IF = 0;
+    TMR1IE = 1;
 // -------------------------------------------------------------- comparator module
     CCP1M3 = 1;CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
                                 //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
@@ -206,6 +218,10 @@ void general_interrupt() {
         buffer[bufWrite] = RCREG;
         bufWrite = (bufWrite + 1 ) % BUFF_SIZE;
         RCIF = 0;
-        RE0 = 1;
+    }
+    if (TMR1IF == 1) {
+        timerCounter++;
+        TMR1IF = 0;
+        RE1 =1;
     }
 }

@@ -50,7 +50,7 @@ char promptMode;
 
 void main(void) {
     initialize();
-    mode = ENTER_DATA;
+    mode = PLAY_NOTE;
     promptMode = COMMAND;
 
     // mode = 0;
@@ -115,7 +115,7 @@ void enterData() {
             case CONFIRM:
 
                 break;
-        }
+         }
         bufCount = 0;
         RE0 = 1;
         RE1 = 1;

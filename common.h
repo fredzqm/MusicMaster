@@ -17,6 +17,7 @@ void general_init();
 void general_interrupt();
 int strcmp(char* a, char* b);
 void itoa(char n, char* s);
+long getTime();
 
 enum Mode 
 { 

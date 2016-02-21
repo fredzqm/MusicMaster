@@ -64,13 +64,13 @@ char encode(char* sym) {
 		return END_SONG; // error
 	tone += length;
 	if (*sym == '\\' && *(sym+1) == '\0'){
-		tone |= 0x00; // 32th note
+		tone |= 0x00; // 32th note, 1/2 sec
 	} else if (*sym == '\0'){
-		tone |= 0x40; // 16th note
+		tone |= 0x40; // 16th note, 1 sec
 	} else if (*sym == '-' && *(sym+1) == '\0'){
-		tone |= 0x80; // 8th note
+		tone |= 0x80; // 8th note, 2 sec
 	} else if (*sym == '-' && *(sym+1) == '-' && *(sym+2) == '\0'){
-		tone |= 0xc0; // 4th note
+		tone |= 0xc0; // 4th note, 4 sec
 	} else {
 		return END_SONG;
 	}
