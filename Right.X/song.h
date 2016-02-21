@@ -5,10 +5,18 @@
 #define MAX_NUM_OF_SONG 4
 #define END_SONG 0
 
+typedef struct {
+	int period;
+	char length;
+} Note;
+
 char existsSong(char songID);
 void setSongName(char songID, char* name);
 void getSongName(char songID, char* buf);
 void openSong(char songID);
-char writeSong(char note, char length);
+void writeSong(char encoding);
 char readSong();
-char endSong();
+void endSong();
+
+char encode(char* sym);
+Note decode(char note);

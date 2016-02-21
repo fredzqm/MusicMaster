@@ -23,6 +23,7 @@
 
 #define EEPROMA  0xA0
 #define EEPROMB  0xA1
+#define GIVE_PROMPT 0xff
 
 void selectGame();
 void enterData();
@@ -31,6 +32,7 @@ void initialize();
 unsigned int ADC_convert(); // Function prototypes
 void tokenize(char* command, char** argv);
 void handleCommand(char* command);
+void handleNote(char* noteSequence);
 
 enum promptMode {
     COMMAND,
@@ -42,8 +44,8 @@ enum promptMode {
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
-char commandBuf[50];
-char buffCount;
+char inputBuf[60];
+char bufCount;
 char promptMode;
 
 void main(void) {
@@ -101,6 +103,24 @@ void selectGame() {
 }
 
 void enterData() {
+    int a = 1;
+    if (bufCount == GIVE_PROMPT){
+        switch (promptMode) {
+            case COMMAND:
+                outString("\n\rMusic Master >:");
+                break;
+            case SONG:
+                outString("\n\r>:");
+                break;
+            case CONFIRM:
+
+                break;
+        }
+        bufCount = 0;
+        RE0 = 1;
+        RE1 = 1;
+        RE2 = 1;
+    }
     while (!hasInChar());
     char input = inChar();
     lcd_clear();
@@ -110,34 +130,35 @@ void enterData() {
     lcd_putch('x');
     lcd_putch(toHex(input/16));
     lcd_putch(toHex(input));
-    switch (promptMode) {
-        case COMMAND:
-            if (input == 0x0d) {
-                commandBuf[buffCount] = '\0';
+    if (input == 0x0d) {
+        inputBuf[bufCount] = '\0';
+        switch (promptMode) {
+            case COMMAND:
                 outString("\n\rEntered Command is: ");
-                outString(commandBuf);
-                buffCount = 0;
-                handleCommand(commandBuf);
-                outString("\n\rMusic Master >:");
-            } else if (input == 0x08) {
-                if (buffCount > 0){
-                    buffCount--;
-                    outChar(0x08);
-                    outChar(' ');
-                    outChar(0x08);
-                }
-            } else {
-                commandBuf[buffCount] = input;
-                buffCount++;
-                outChar(input);
-            }
-            break;
-        case SONG:
+                outString(inputBuf);
+                handleCommand(inputBuf);
+                break;
+            case SONG:
+                outString("\n\rEntered note is: ");
+                outString(inputBuf);
+                handleNote(inputBuf);
+                break;
+            case CONFIRM:
 
-            break;
-        case CONFIRM:
-
-            break;
+                break;
+        }
+        bufCount = GIVE_PROMPT;
+    } else if (input == 0x08) {
+        if (bufCount > 0){
+            bufCount--;
+            outChar(0x08);
+            outChar(' ');
+            outChar(0x08);
+        }
+    } else {
+        inputBuf[bufCount] = input;
+        bufCount++;
+        outChar(input);
     }
 }
 
@@ -163,25 +184,26 @@ void tokenize(char* command, char** argv) {
 }
 
 void handleCommand(char* command) {
-    char* argv[20];
+    char* argv[4];
     char tbuff[11];
     tokenize(command, argv);
     int i = 0;
 
     while(argv[i] != 0){
         outString("\n\rArg");
-        itoa(i, tbuff);outString(tbuff);
+        itoa(i, tbuff); outString(tbuff);
         outString(": ");
         outString(argv[i++]);
     }
+
     if (strcmp(command, "touch")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             if (!existsSong(i)){
-                setSongName(i, argv[1]);
-                openSong(i);
                 outString("\n\rCreate song: ");
                 outString(argv[1]);
-                outString("Start enter notes: ");
+                outString(" Start entering notes:");
+                setSongName(i, argv[1]);
+                openSong(i);
                 promptMode = SONG;
                 return;
             }
@@ -190,10 +212,9 @@ void handleCommand(char* command) {
     } else if (strcmp(command, "ls")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             outString("\n\rSong ");
-            itoa(i, tbuff);outString(tbuff);
+            itoa(i, tbuff); outString(tbuff);
             outString(": ");
             getSongName(i, tbuff); outString(tbuff);
-            return;
         }
         outString("\n\rThis song is not found");
     } else if (strcmp(command, "rm")) {
@@ -208,6 +229,13 @@ void handleCommand(char* command) {
         }
         outString("\n\rThis song is not found");
     }
+}
+
+void handleNote(char* noteSequence) {
+    char* argv[25];
+    char tbuff[11];
+    tokenize(noteSequence, argv);
+    
 }
 
 /*
@@ -261,7 +289,7 @@ void initialize()
 {   
     general_init();
 
-    buffCount = 0;
+    bufCount = 0;
 
 // -------------------------------------------------------------- comparator module2
     CCP2M3 = 1;CCP2M2 = 0;CCP2M1 = 1;CCP2M0 = 0;
