@@ -2,7 +2,8 @@
 
 int keyStatus, note;
 int timerCounter;
-char mode, bufRead, bufWrite;
+char mode;
+char bufRead, bufWrite;
 char buffer[BUFF_SIZE];
 
 void pianoMode() {
@@ -111,65 +112,8 @@ void updateKey() {
     keyStatus |= PORTB & 0x000f;
 }
 
-char hasInChar() {
-    return bufRead != bufWrite;
-}
-
-unsigned char inChar() {
-    char ret = buffer[bufRead];
-    bufRead = (bufRead + 1 ) % BUFF_SIZE;
-    return ret;
-}
-
-void outString(char* str) {
-    while(*str != '\0'){
-        outChar(*str++);
-    }
-}
-
-
-void outChar(unsigned char outchr)
-{
-    while(TXIF == 0); //Wait until Transmit Register is Empty (TXIF = 1).
-    TXREG = outchr; //Load character to be sent into Transmit register (TXREG).
-}
-
 long getTime() {
     return ( (long)timerCounter <<16) + TMR1;
-}
-
-
-char toHex(char binary){
-    binary = binary % 16;
-    if (binary < 10) {
-        return binary + '0';
-    } else {
-        return binary - 10 + 'A';
-    }
-}
-
-int strcmp(char* a, char* b) {
-    while(*a == *b){
-        if (*a == '\0')
-            return 1;
-        a++;
-        b++;
-    }
-    return 0;
-}
-
-void itoa(char n, char* s)
-{
-    s[3] = '\0';
-    int i;
-    for (i = 2; i>=0; i--){
-        if (n == 0 & i != 2 ){
-            s[i] = ' ';
-        } else {
-            s[i] = n % 10 + '0';  
-            n /= 10;
-        }
-    }
 }
 
 

@@ -78,7 +78,7 @@ char encode(char* sym) {
 	return tone;
 }
 
-
+/*
 	switch(keyEncoding) {
         case 0x6fff: return 3058; // 1A
         case 0x7eff: return 2724; // 2A
@@ -108,6 +108,8 @@ char encode(char* sym) {
     }
 }
 
+*/
+
 Note decode(char note) {
 	Note n;
 	switch(note & 0xc0){
@@ -124,134 +126,111 @@ Note decode(char note) {
 			n.length = 8;
 			break;
 		default:
-			n.period = END_SONG;
 			return;
 	}
 	switch(note & 0x37) {
 		case 0x01: 
-			n.period = 3058; 
 			n.name[1] = '*';
 			n.name[2] = '1';
 			n.name[3] = '\0';
 			break; // *1 (1A)
 		case 0x02: 
-			n.period = 2724; 
 			n.name[1] = '*';
 			n.name[2] = '2';
 			n.name[3] = '\0';
 			break; // *2 (2A)
 		case 0x03: 
-			n.period = 2427; 
 			n.name[1] = '*';
 			n.name[2] = '3';
 			n.name[3] = '\0';
 			break; // *3 (3A)
 		case 0x04: 
-			n.period = 2291; 
 			n.name[1] = '*';
 			n.name[2] = '4';
 			n.name[3] = '\0';
 			break; // *4 (4A)
 		case 0x05: 
-			n.period = 2041; 
 			n.name[1] = '*';
 			n.name[2] = '5';
 			n.name[3] = '\0';
 			break; // *5 (5A)
 		case 0x06: 
-			n.period = 1818; 
 			n.name[1] = '*';
 			n.name[2] = '6';
 			n.name[3] = '\0';
 			break; // *6 (6A)
 		case 0x07: 
-			n.period = 1620; 
 			n.name[1] = '*';
 			n.name[2] = '7';
 			n.name[3] = '\0';
 			break; // *7 (7A)
 
 		case 0x11: 
-			n.period = 1529; 
 			n.name[1] = '1';
 			n.name[2] = '\0';
 			break; // 1
 		case 0x12: 
-			n.period = 1362; 
 			n.name[1] = '2';
 			n.name[2] = '\0';
 			break; // 2
 		case 0x13: 
-			n.period = 1213; 
 			n.name[1] = '3';
 			n.name[2] = '\0';
 			break; // 3
 		case 0x14: 
-			n.period = 1145; 
 			n.name[1] = '4';
 			n.name[2] = '\0';
 			break; // 4
 		case 0x15: 
-			n.period = 1020; 
 			n.name[1] = '5';
 			n.name[2] = '\0';
 			break; // 5
 		case 0x16: 
-			n.period = 909;  
 			n.name[1] = '6';
 			n.name[2] = '\0';
 			break; // 6
 		case 0x17: 
-			n.period = 810;  
 			n.name[1] = '7';
 			n.name[2] = '\0';
 			break; // 7
 
 		case 0x21: 
-			n.period = 764;  
 			n.name[1] = '#';
 			n.name[2] = '1';
 			n.name[3] = '\0';
 			break; // #1 (1B)
 		case 0x22: 
-			n.period = 681;  
 			n.name[1] = '#';
 			n.name[2] = '2';
 			n.name[3] = '\0';
 			break; // #2 (2B)
 		case 0x23: 
-			n.period = 607;  
 			n.name[1] = '#';
 			n.name[2] = '3';
 			n.name[3] = '\0';
 			break; // #3 (3B)
 		case 0x24: 
-			n.period = 573;  
 			n.name[1] = '#';
 			n.name[2] = '4';
 			n.name[3] = '\0';
 			break; // #4 (4B)
 		case 0x25: 
-			n.period = 510;  
 			n.name[1] = '#';
 			n.name[2] = '5';
 			n.name[3] = '\0';
 			break; // #5 (5B)
 		case 0x26: 
-			n.period = 454;  
 			n.name[1] = '#';
 			n.name[2] = '6';
 			n.name[3] = '\0';
 			break; // #6 (6B)
 		case 0x27: 
-			n.period = 405;  
 			n.name[1] = '#';
 			n.name[2] = '7';
 			n.name[3] = '\0';
 			break; // #7 (7B)
 
 		default:
-			n.period = END_SONG;
 			return; // not found
    }
    return n;

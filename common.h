@@ -1,23 +1,16 @@
 #include <xc.h>
 #include "i2c.h"
 #include "lcd4bits.h"
-
-#define BUFF_SIZE 20
+#include "urant.h"
+#include "string.h"
 
 void pianoMode(); // default
-char toHex(char binary);
 int getNote(int keyEncoding);
 void playNote(int keyEncoding, long length);
-char hasInChar();
-unsigned char inChar(void);
-void outChar(unsigned char);
-void outString(char* str);
 char getKeyCharacter();
 void updateKey(void);
 void general_init();
 void general_interrupt();
-int strcmp(char* a, char* b);
-void itoa(char n, char* s);
 long getTime();
 
 enum Mode 
