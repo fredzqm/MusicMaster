@@ -186,14 +186,12 @@ void handleCommand(char* command) {
     char tbuff[11];
     tokenize(command, argv);
     int i = 0;
-
-    while(argv[i] != 0){
-        outString("\n\rArg");
-        itoa(i, tbuff); outString(tbuff);
-        outString(": ");
-        outString(argv[i++]);
-    }
-
+    // while(argv[i] != 0){
+    //     outString("\n\rArg");
+    //     itoa(i, tbuff); outString(tbuff);
+    //     outString(": ");
+    //     outString(argv[i++]);
+    // }
     if (strcmp(command, "touch")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             if (!existsSong(i)){
@@ -216,10 +214,16 @@ void handleCommand(char* command) {
                 outString(":\n\r");
                 openSong(i);
                 char read = readSong();
-                while (read != END_SONG) {
+                while(read != END_SONG) {
+                    outString("\n\rEncoding: 0x");
+                    outChar(toHex(read>>4));
+                    outChar(toHex(read));
+                    outChar(' ');
                     outString(decode(read).name);
                     outChar(' ');
+                    read = readSong();
                 }
+                return;
             }
         }
         outString("\n\rThis song is not found");
@@ -271,7 +275,9 @@ void handleNote(char* noteSequence) {
         char input = inChar();
         outChar(input);
         if (input == 'y') {
+            i = 0;
             while(notes[i] != 0){
+                code = encode(notes[i++]);
                 writeSong(code);
             }
             break;
@@ -287,6 +293,7 @@ void handleNote(char* noteSequence) {
         if (input == 'y') {
             break;
         } else if (input == 'n') {
+            endSong();
             promptMode = COMMAND;
             break;
         }
