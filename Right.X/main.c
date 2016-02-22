@@ -281,7 +281,9 @@ void handleNote(char* noteSequence) {
         }
     }
     while(1) {
-        outString("\n\rEnter another line? (Yes[y], No[n]) :");
+        outString("\n\r");
+        itoa(spaceLeft(), tbuff, 3); outString(tbuff);
+        outString(" notes left. Enter another line? (Yes[y], No[n]) :");
         while (!hasInChar()) {
             if (mode != ENTER_DATA)
                 return;

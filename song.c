@@ -49,6 +49,10 @@ void endSong() {
 	eeprom_write(curSongOffset, END_SONG);
 }
 
+char spaceLeft() {
+	return MAX_SIZE_OF_SONG - curSongOffset % MAX_SIZE_OF_SONG;
+}
+
 char encode(char* sym) {
 	char tone;
 	if (*sym == '*'){

@@ -25,7 +25,7 @@ void game() {
             read = readSong();
             Note n = decode(read);
             notes[index] = n;
-        } 
+        }
         if (read == END_SONG) {
             notes[index].keyEncoding = 0;
             notes[index].length = 0; // to denote the end
@@ -53,31 +53,18 @@ void game() {
 
         nCount++;
 
-        // if (gameMode == SINGLE) {
-            // totalScore += playNote(notes[index].keyEncoding, (TIME_FACTOR+INTERVEL_RATIO) * notes[index].length);
-        // } else {
         totalScore += playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
-        playNote(0xffff, INTERVEL_RATIO * notes[index].length);
-        // }
+        updateNote(0xffff);
     }
     mode = RESUT_DISPALY;
 }
 
-void updateNote(int keyEncoding){
-    note = getNote(keyEncoding);
-    if (note == 0){
-        CCP1M3 = 1;
-    } else {
-        CCP1M3 = 0;
-    }
-}
-
 char playNote(int keyEncoding, long length) {
-    signed char scor = -1;
+    signed char scor = 0;
     long clock = getTime();
     updateKey();
     if (keyEncoding == keyStatus){
-        scor = 1;
+        scor = -1;
     }
 
     if (gameMode == SINGLE) {
@@ -87,7 +74,7 @@ char playNote(int keyEncoding, long length) {
     }
 
     DelayMs(50);
-    if (scor = -1 && keyEncoding == keyStatus){
+    if (scor == 0 && keyEncoding == keyStatus){
         scor = 5;
     }
     if (gameMode == SINGLE) {
@@ -95,7 +82,7 @@ char playNote(int keyEncoding, long length) {
     }
 
     DelayMs(50);
-    if (scor = -1 && keyEncoding == keyStatus){
+    if (scor == 0 && keyEncoding == keyStatus){
         scor = 4;
     }
     if (gameMode == SINGLE) {
@@ -103,7 +90,7 @@ char playNote(int keyEncoding, long length) {
     }
 
     DelayMs(50);
-    if (scor = -1 && keyEncoding == keyStatus){
+    if (scor == 0 && keyEncoding == keyStatus){
         scor = 3;
     }
     if (gameMode == SINGLE) {
@@ -111,11 +98,8 @@ char playNote(int keyEncoding, long length) {
     }
 
     DelayMs(50);
-    if (scor = -1 && keyEncoding == keyStatus){
+    if (scor == 0 && keyEncoding == keyStatus){
         scor = 2;
-    }
-    if (gameMode == SINGLE) {
-        updateNote(keyStatus);
     }
 
     clock += length;
@@ -123,7 +107,7 @@ char playNote(int keyEncoding, long length) {
         if (gameMode == SINGLE) {
             updateNote(keyStatus);
         }
-        DelayMs(50);
+        DelayMs(10);
     }
     return scor;
 }
@@ -138,6 +122,16 @@ void result() {
     lcd_puts("Score: ");
     itoa(totalScore, tbuff, 5); lcd_puts(tbuff);
     DelayMs(100);
+}
+
+
+void updateNote(int keyEncoding){
+    note = getNote(keyEncoding);
+    if (note == 0){
+        CCP1M3 = 1;
+    } else {
+        CCP1M3 = 0;
+    }
 }
 
 int getNote(int keyEncoding)

@@ -12,6 +12,7 @@ void pianoMode(); // default
 void game();
 void result();
 int getNote(int keyEncoding);
+void updateNote(int keyEncoding);
 char playNote(int keyEncoding, long length);
 char getKeyCharacter();
 void updateKey(void);
