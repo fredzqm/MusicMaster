@@ -128,7 +128,7 @@ void result() {
     lcd_puts("Notes: ");
     itoa(nCount, tbuff, 5); lcd_puts(tbuff);
     lcd_goto(0x40);
-    lcd_puts("Score:");
+    lcd_puts("Score: ");
     itoa(totalScore, tbuff, 5); lcd_puts(tbuff);
     DelayMs(100);
 }

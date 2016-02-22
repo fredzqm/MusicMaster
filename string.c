@@ -24,7 +24,7 @@ void itoa(char n, char* s, int digitNum) {
     s[digitNum] = '\0';
     int i;
     for (i = digitNum - 1; i>=0; i--){
-        if (n == 0 & i != 2 ){
+        if (n == 0 && i != digitNum - 1){
             s[i] = ' ';
         } else {
             s[i] = n % 10 + '0';  
