@@ -22,10 +22,12 @@
 
 #define SENSEOR_A  0x90
 
+void selectGame();
+void enterData();
+
 void initialize();
 void testTemperature(unsigned char TMP101_address);
 void configTemSensor(char TMP101_address);
-
 
 void main(void) {
     initialize();
@@ -36,20 +38,29 @@ void main(void) {
         switch(mode) {
             case COMMAND:
             case ENTER_DATA:
+                enterData();
                 break;
             case SELECT_GAME:
+                selectGame();
                 break;
             case GAME:
                 game();
                 break;
-            case PAUSE:
-                break;
-                // testTemperature(SENSEOR_A); // TMP101 with address 1001000
             case RESUT_DISPALY:
+                result();
                 break;
         }
     }
 }
+
+void selectGame() {
+    
+}
+
+void enterData() {
+
+}
+
 
 void initialize() 
 {
