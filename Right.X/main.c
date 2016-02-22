@@ -69,21 +69,24 @@ void main(void) {
 
 void selectGame() {
     unsigned int adval, i;
-    char songID;
     char tbuff[11];
+    char songID;
     for (i = 0 ; i < 50 ; i++){
         DelayMs(5);
         adval = ADC_convert();
         width = widthMin + ( (unsigned long) adval * widthRange )/1023;
     }
-    songID = ((long)adval * MAX_NUM_OF_SONG) >> 10;
+    songID = ((long)adval * MAX_NUM_OF_SONG) / 1024;
     lcd_clear();
     lcd_goto(0);
     lcd_puts("Song: ");
-    itoa(i, tbuff); lcd_puts(tbuff);
+    itoa(songID, tbuff); lcd_puts(tbuff);
     lcd_goto(0x40);
-    getSongName(i, tbuff);
-    lcd_puts(tbuff);
+    getSongName(songID, tbuff);
+    if (tbuff[0] == '\0')
+        lcd_puts("Not exists!");
+    else
+        lcd_puts(tbuff);
 }
 
 void enterData() {
@@ -105,7 +108,10 @@ void enterData() {
         RE1 = 1;
         RE2 = 1;
     }
-    while (!hasInChar());
+    while (!hasInChar()) {
+        if (mode != COMMAND || mode!= ENTER_DATA)
+            return;
+    }
     char input = inChar();
     lcd_clear();
     lcd_putch(input);
@@ -256,7 +262,10 @@ void handleNote(char* noteSequence) {
     char i = 0, code;
     while(1) {
         outString("\n\rSave this line? (Yes[y], No[n]) :");
-        while (!hasInChar());
+        while (!hasInChar()) {
+            if (mode != ENTER_DATA)
+                return;
+        }
         char input = inChar();
         outChar(input);
         if (input == 'y') {
@@ -272,7 +281,10 @@ void handleNote(char* noteSequence) {
     }
     while(1) {
         outString("\n\rEnter another line? (Yes[y], No[n]) :");
-        while (!hasInChar());
+        while (!hasInChar()) {
+            if (mode != ENTER_DATA)
+                return;
+        }
         char input = inChar();
         outChar(input);
         if (input == 'y') {
