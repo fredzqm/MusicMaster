@@ -9,7 +9,6 @@
 #define LINE_WIDTH 16
 
 void pianoMode(); // default
-void game();
 void result();
 int getNote(int keyEncoding);
 void updateNote(int keyEncoding);
@@ -37,5 +36,5 @@ enum GameMode
 };
 
 
-extern int keyStatus, note;
+extern int keyStatus, note, totalScore, nCount;
 extern char mode, gameMode;

@@ -26,6 +26,7 @@
 
 void selectGame();
 void enterData();
+void game();
 
 void initialize();
 unsigned int ADC_convert(); // Function prototypes
@@ -71,6 +72,61 @@ void main(void) {
     }
 }
 
+void game() {
+    Note notes[LINE_WIDTH];
+    signed char i, index, read;
+    totalScore = 0; nCount = 0;
+
+    for (i = 0 ; i < LINE_WIDTH; i++){
+        notes[i].keyEncoding = 0;
+        notes[i].length = 2;
+        notes[i].name[0] = ' ';
+        notes[i].name[1] = ' ';
+        notes[i].name[2] = '\0';
+    }
+
+    
+    index = 0;
+    read = END_SONG + 1;
+    while(1) {
+        if (read != END_SONG) {
+            read = readSong();
+            outChar(read);
+            Note n = decode(read);
+            notes[index] = n;
+        }
+        if (read == END_SONG) {
+            notes[index].keyEncoding = 0;
+            notes[index].length = 0; // to denote the end
+            notes[index].name[0] = ' ';
+            notes[index].name[1] = ' ';
+            notes[index].name[2] = '\0';
+        }
+
+        index++;
+        if (index == LINE_WIDTH)
+            index = 0;
+
+        lcd_clear();
+        lcd_goto(0);
+        for (i = LINE_WIDTH-1 ; i >= 0; i--){
+            lcd_putch(notes[(i+index)%LINE_WIDTH].name[1]);
+        }
+        lcd_goto(0x40);
+        for (i = LINE_WIDTH-1 ; i >= 0; i--){
+            lcd_putch(notes[(i+index)%LINE_WIDTH].name[0]);
+        }
+
+        if (notes[index].length == 0)
+            break;
+
+        nCount++;
+
+        totalScore += playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
+        updateNote(0xffff);
+    }
+    mode = RESUT_DISPALY;
+}
 
 void selectGame() {
     unsigned int adval, i;
@@ -406,6 +462,7 @@ void interrupt interrupt_handler(void)
                     mode = SELECT_GAME;
                     break;
                 case SELECT_GAME:
+                    outChar(0xff);
                     mode = GAME;
                     break;
                 case GAME:

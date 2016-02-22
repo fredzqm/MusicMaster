@@ -24,6 +24,7 @@
 
 void selectGame();
 void enterData();
+void game();
 
 void initialize();
 void testTemperature(unsigned char TMP101_address);
@@ -31,9 +32,10 @@ void configTemSensor(char TMP101_address);
 
 void main(void) {
     initialize();
-    mode = TEMP_TEST;
+    mode = COMMAND;
     gameMode = DOUBLE;
     char temp_rem, temp;
+    testTemperature(SENSEOR_A);
     while (1) {
         switch(mode) {
             case COMMAND:
@@ -53,14 +55,92 @@ void main(void) {
     }
 }
 
+void game() {
+    Note notes[LINE_WIDTH];
+    signed char i, index, read;
+    totalScore = 0; nCount = 0;
+
+    for (i = 0 ; i < LINE_WIDTH; i++){
+        notes[i].keyEncoding = 0;
+        notes[i].length = 2;
+        notes[i].name[0] = ' ';
+        notes[i].name[1] = ' ';
+        notes[i].name[2] = '\0';
+    }
+
+    index = 0;
+    read = END_SONG + 1;
+    while(1) {
+        if (read != END_SONG) {
+            while (!hasInChar()) {
+                if (mode != GAME)
+                    return;
+            }
+            read = inChar();
+            Note n = decode(read);
+            notes[index] = n;
+        }
+        if (read == END_SONG) {
+            notes[index].keyEncoding = 0;
+            notes[index].length = 0; // to denote the end
+            notes[index].name[0] = ' ';
+            notes[index].name[1] = ' ';
+            notes[index].name[2] = '\0';
+        }
+
+        index++;
+        if (index == LINE_WIDTH)
+            index = 0;
+
+        lcd_clear();
+        lcd_goto(0);
+        for (i = LINE_WIDTH-1 ; i >= 0; i--){
+            lcd_putch(notes[(i+index)%LINE_WIDTH].name[1]);
+        }
+        lcd_goto(0x40);
+        for (i = LINE_WIDTH-1 ; i >= 0; i--){
+            lcd_putch(notes[(i+index)%LINE_WIDTH].name[0]);
+        }
+
+        if (notes[index].length == 0)
+            break;
+
+        nCount++;
+
+        totalScore += playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
+        updateNote(0xffff);
+    }
+    mode = RESUT_DISPALY;
+}
+
 void selectGame() {
     
 }
 
 void enterData() {
-
+    char input, a, b;
+    char commandBuf[3];
+    while(1){
+        while(!hasInChar());
+        input = inChar();
+        if (input == 0xff){ // start the game
+            mode = GAME;
+            return;
+        }
+        if (input == CMD_READ){
+            while(!hasInChar());
+            a = inChar();
+            outChar(eeprom_read(a));
+        }
+        if (input == CMD_WRITE){
+            while(!hasInChar());
+            a = inChar();
+            while(!hasInChar());
+            b = inChar();
+            eeprom_write(a, b);
+        }
+    }
 }
-
 
 void initialize() 
 {

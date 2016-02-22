@@ -1,17 +1,43 @@
-// eeprom_write(address, value);     // Writing value 0x9 to EEPROM address 0xE5	
+// writeData(address, value);     // Writing value 0x9 to EEPROM address 0xE5	
 #include "song.h"
-// #include "../common.h"
+#include "urant.h"
 
 char curSongOffset;
 
+char readData(int address) {
+	char addr = (char) address;
+	if (address < 256)
+		return eeprom_read(addr);
+	else {
+		// outChar(CMD_START);
+		outChar(CMD_READ);
+		outChar(addr);
+		while(!hasInChar());
+		return inChar();
+	}
+
+}
+
+void writeData(int address, char data) {
+	char addr = (char) address;
+	if (address < 256)
+		eeprom_write(addr, data);
+	else {
+		// outChar(CMD_START);
+		outChar(CMD_WRITE);
+		outChar(addr);
+		outChar(data);
+	}
+}
+
 char existsSong(char songID) {
-	return (eeprom_read (songID * MAX_SIZE_OF_SONG) != '\0');
+	return (readData(songID * MAX_SIZE_OF_SONG) != '\0');
 }
 
 void setSongName(char songID, char* name) {
 	int i;
 	for (i = 0; i < MAX_LENGTH_OF_SONG_NAME; i++) {
-		eeprom_write(songID * MAX_SIZE_OF_SONG + i, name[i]);
+		writeData(songID * MAX_SIZE_OF_SONG + i, name[i]);
 		if (*name == '\0')
 			return;
 	}
@@ -20,7 +46,7 @@ void setSongName(char songID, char* name) {
 void getSongName(char songID, char* buf) {
 	int i;
 	for (i = 0; i < MAX_LENGTH_OF_SONG_NAME; i++) {
-		buf[i] = eeprom_read(songID * MAX_SIZE_OF_SONG + i);
+		buf[i] = readData(songID * MAX_SIZE_OF_SONG + i);
 		if (buf[i] == '\0')
 			return;
 	}
@@ -35,18 +61,18 @@ void writeSong(char encoding) {
 	// outString("\n\rWrite at: 0x");
 	// outChar(toHex(curSongOffset>>4));
 	// outChar(toHex(curSongOffset));
-	eeprom_write(curSongOffset++, encoding);
+	writeData(curSongOffset++, encoding);
 }
 
 char readSong() {
 	// outString("\n\rRead at: 0x");
 	// outChar(toHex(curSongOffset>>4));
 	// outChar(toHex(curSongOffset));
-	return eeprom_read(curSongOffset++);
+	return readData(curSongOffset++);
 }
 
 void endSong() {
-	eeprom_write(curSongOffset, END_SONG);
+	writeData(curSongOffset, END_SONG);
 }
 
 char spaceLeft() {

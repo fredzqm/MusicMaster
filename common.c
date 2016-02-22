@@ -1,63 +1,16 @@
 #include "common.h"
+// Red BLue Green
+#define RED RE0 = 1; RE1 = 0; RE2 = 0; 
+#define GREEN RE0 = 0; RE1 = 0; RE2 = 1; 
+#define YELLOW RE0 = 1; RE1 = 1; RE2 = 0; 
+#define BLUE RE0 = 0; RE1 = 1; RE2 = 0; 
+#define DARK RE0 = 0; RE1 = 0; RE2 = 0; 
+
 
 int keyStatus, note, totalScore, nCount;
 int timerCounter;
 char mode, gameMode;
 
-void game() {
-    Note notes[LINE_WIDTH];
-    signed char i, index, read;
-    totalScore = 0; nCount = 0;
-
-    for (i = 0 ; i < LINE_WIDTH; i++){
-        notes[i].keyEncoding = 0;
-        notes[i].length = 2;
-        notes[i].name[0] = ' ';
-        notes[i].name[1] = ' ';
-        notes[i].name[2] = '\0';
-    }
-
-    
-    index = 0;
-    read = END_SONG + 1;
-    while(1) {
-        if (read != END_SONG) {
-            read = readSong();
-            Note n = decode(read);
-            notes[index] = n;
-        }
-        if (read == END_SONG) {
-            notes[index].keyEncoding = 0;
-            notes[index].length = 0; // to denote the end
-            notes[index].name[0] = ' ';
-            notes[index].name[1] = ' ';
-            notes[index].name[2] = '\0';
-        }
-
-        index++;
-        if (index == LINE_WIDTH)
-            index = 0;
-
-        lcd_clear();
-        lcd_goto(0);
-        for (i = LINE_WIDTH-1 ; i >= 0; i--){
-            lcd_putch(notes[(i+index)%LINE_WIDTH].name[1]);
-        }
-        lcd_goto(0x40);
-        for (i = LINE_WIDTH-1 ; i >= 0; i--){
-            lcd_putch(notes[(i+index)%LINE_WIDTH].name[0]);
-        }
-
-        if (notes[index].length == 0)
-            break;
-
-        nCount++;
-
-        totalScore += playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
-        updateNote(0xffff);
-    }
-    mode = RESUT_DISPALY;
-}
 
 char playNote(int keyEncoding, long length) {
     signed char scor = 0;
@@ -65,50 +18,48 @@ char playNote(int keyEncoding, long length) {
     updateKey();
     if (keyEncoding == keyStatus){
         scor = -1;
+        RED
     }
-
     if (gameMode == SINGLE) {
         updateNote(keyStatus);
     } else {
         updateNote(keyEncoding);
     }
-
     DelayMs(50);
-    if (scor == 0 && keyEncoding == keyStatus){
-        scor = 5;
-    }
-    if (gameMode == SINGLE) {
-        updateNote(keyStatus);
-    }
-
-    DelayMs(50);
+    updateKey();
     if (scor == 0 && keyEncoding == keyStatus){
         scor = 4;
+        GREEN
     }
     if (gameMode == SINGLE) {
         updateNote(keyStatus);
     }
 
-    DelayMs(50);
+    DelayMs(100);
+    updateKey();
     if (scor == 0 && keyEncoding == keyStatus){
         scor = 3;
+        YELLOW
     }
     if (gameMode == SINGLE) {
         updateNote(keyStatus);
-    }
-
-    DelayMs(50);
-    if (scor == 0 && keyEncoding == keyStatus){
-        scor = 2;
     }
 
     clock += length;
+    char x = 0;
     while(getTime() - clock < 0){
+        DelayMs(10);
+        updateKey();
+        if (scor == 0 && keyEncoding == keyStatus){
+            scor = 1;
+            BLUE
+        }
         if (gameMode == SINGLE) {
             updateNote(keyStatus);
         }
-        DelayMs(10);
     }
+    if (scor == -1)
+        DARK
     return scor;
 }
 
