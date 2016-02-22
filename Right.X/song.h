@@ -8,7 +8,7 @@
 typedef struct {
 	int keyEncoding;
 	char length;
-	char name[3];
+	char* name;
 } Note;
 
 char existsSong(char songID);

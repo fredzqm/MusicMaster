@@ -2,9 +2,8 @@
 
 int keyStatus, note;
 int timerCounter;
-char mode;
-char bufRead, bufWrite;
-char buffer[BUFF_SIZE];
+char mode, gameMode;
+
 
 void pianoMode() {
     char x = getKeyCharacter();
@@ -143,7 +142,7 @@ void general_init() {
     TMR1IF = 0;
     TMR1IE = 1;
 // -------------------------------------------------------------- comparator module
-    CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
+    CCP1M3 = 1; CCP1M2 = 0;CCP1M1 = 1;CCP1M0 = 0;
                                 //Set CCP1 mode for "Compare with toggle on CCP1 pin" 
                                 //See REGISTER 11-1 datasheet
     TRISC2 = 0;                 //Make CCP1 pin an output.

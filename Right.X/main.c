@@ -24,6 +24,8 @@
 #define EEPROMA  0xA0
 #define EEPROMB  0xA1
 #define GIVE_PROMPT 0xff
+#define TIME_FACTOR 500000
+#define INTERVEL_RATIO 0.1
 
 void selectGame();
 void enterData();
@@ -34,37 +36,31 @@ void tokenize(char* command, char** argv);
 void handleCommand(char* command);
 void handleNote(char* noteSequence);
 
-enum promptMode {
-    COMMAND,
-    SONG,
-    PLAYSONG
-};
 
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
 char inputBuf[60];
 char bufCount;
-char promptMode;
+char mode;
 
 void main(void) {
     initialize();
-    mode = ENTER_DATA;
-    promptMode = COMMAND;
-    mode = GAME;
+    mode = COMMAND;
+    gameMode = DOUBLE;
     while (1) {
         switch(mode) {
+            case COMMAND:
+            case ENTER_DATA:
+                enterData();
+                break;
             case SELECT_GAME:
                 selectGame();
                 break;
             case GAME:
-            case TEMP_TEST:
                 pianoMode();
                 break;
             case RESUT_DISPALY:
-                break;
-            case ENTER_DATA:
-                enterData();
                 break;
         }
     }
@@ -73,44 +69,35 @@ void main(void) {
 
 void selectGame() {
     unsigned int adval, i;
+    char songID;
+    char tbuff[11];
     for (i = 0 ; i < 50 ; i++){
         DelayMs(5);
         adval = ADC_convert();
         width = widthMin + ( (unsigned long) adval * widthRange )/1023;
     }
-    unsigned char char0, char1, char2, char3;
-    adval = ((unsigned long) adval * 5000 )/1023;
-    char0 = adval % 10 ;
-    adval = adval / 10;
-    char1 = adval % 10 + 0x30; // add 0x30 to convert digit value to ASCII code
-    adval = adval / 10;
-    char2 = adval % 10 + 0x30;
-    adval = adval / 10;
-    char3 = adval % 10 + 0x30;
-    if (char0 >= 5){
-        char1++;
-    }
+    songID = ((long)adval * MAX_NUM_OF_SONG) >> 10;
     lcd_clear();
     lcd_goto(0);
-    lcd_putch(char3);
-    lcd_putch('.');
-    lcd_putch(char2);
-    lcd_putch(char1);
-    lcd_puts("Volts");
+    lcd_puts("Song: ");
+    itoa(i, tbuff); lcd_puts(tbuff);
+    lcd_goto(0x40);
+    getSongName(i, tbuff);
+    lcd_puts(tbuff);
 }
 
 void enterData() {
     int a = 1;
     if (bufCount == GIVE_PROMPT){
-        switch (promptMode) {
+        switch (mode) {
             case COMMAND:
                 outString("\n\rMusic Master >:");
                 break;
-            case SONG:
+            case ENTER_DATA:
                 outString("\n\r>:");
                 break;
-            case PLAYSONG:
-
+            default:
+                return;
                 break;
          }
         bufCount = 0;
@@ -129,15 +116,12 @@ void enterData() {
     lcd_putch(toHex(input));
     if (input == 0x0d) {
         inputBuf[bufCount] = '\0';
-        switch (promptMode) {
+        switch (mode) {
             case COMMAND:
                 handleCommand(inputBuf);
                 break;
-            case SONG:
+            case ENTER_DATA:
                 handleNote(inputBuf);
-                break;
-            case PLAYSONG:
-
                 break;
         }
         bufCount = GIVE_PROMPT;
@@ -195,7 +179,7 @@ void handleCommand(char* command) {
                 outString(" Start entering notes:");
                 setSongName(i, argv[1]);
                 openSong(i);
-                promptMode = SONG;
+                mode = ENTER_DATA;
                 return;
             }
         }
@@ -214,6 +198,27 @@ void handleCommand(char* command) {
                     outChar(' ');
                     read = readSong();
                 }
+                return;
+            }
+        }
+        outString("\n\rThis song is not found");
+    } else if (strcmp(command, "play")) {
+        for (i = 0; i < MAX_NUM_OF_SONG; i++){
+            getSongName(i, tbuff);
+            if (strcmp(argv[1], tbuff)){
+                outString("\n\rStart playing ");
+                outString(argv[1]);
+                openSong(i);
+                char read = readSong();
+                while(read != END_SONG) {
+                    Note n = decode(read);
+                    outString("\n\rPlaying  ");
+                    outString(n.name);
+                    playNote(n.keyEncoding, TIME_FACTOR * (1 - INTERVEL_RATIO) * n.length);
+                    playNote(0, TIME_FACTOR * INTERVEL_RATIO * n.length);
+                    read = readSong();
+                }
+                // playNote(0, 0);
                 return;
             }
         }
@@ -249,17 +254,6 @@ void handleNote(char* noteSequence) {
     char tbuff[11];
     tokenize(noteSequence, notes);
     char i = 0, code;
-    // while(notes[i] != 0){
-    //     outString("\n\rNote");
-    //     itoa(i, tbuff); outString(tbuff);
-    //     outString(": ");
-    //     outString(notes[i]);
-    //     outString("  Encoded as: 0x");
-    //     code = encode(notes[i]);
-    //     outChar(toHex(code>>4));
-    //     outChar(toHex(code));
-    //     i++;
-    // }
     while(1) {
         outString("\n\rSave this line? (Yes[y], No[n]) :");
         while (!hasInChar());
@@ -285,7 +279,7 @@ void handleNote(char* noteSequence) {
             break;
         } else if (input == 'n') {
             endSong();
-            promptMode = COMMAND;
+            mode = COMMAND;
             break;
         }
     }
@@ -389,12 +383,44 @@ void interrupt interrupt_handler(void)
         }
         CCP2IF = 0;     //Be sure to relax the CCP1 interrupt before returning.
     }
-    // if (RBIF == 1) {
-    //     if (RB0 == 0) {
-    //             RA5 = 1;
-    //         }else
-    //     }
-    //     DelayMs(5);
-    //     RBIF = 0;
-    // }
+    if (RBIF == 1) {
+        if (RB4 == 0) {
+            switch(mode) {
+                case COMMAND:
+                case ENTER_DATA:
+                    mode = SELECT_GAME;
+                    break;
+                case SELECT_GAME:
+                    mode = GAME;
+                    break;
+                case GAME:
+                    mode = PAUSE;
+                    break;
+                case PAUSE:
+                    mode = GAME;
+                    break;
+                case RESUT_DISPALY:
+                    mode = SELECT_GAME;
+                    break;
+                default:
+                    mode = SELECT_GAME;
+                    break;
+            }
+        }
+        if (RB5 == 0) {
+            switch(gameMode) {
+                case SINGLE:
+                    mode = DOUBLE;
+                    break;
+                case DOUBLE:
+                    mode = SINGLE;
+                    break;
+                default:
+                    mode = SINGLE;
+                    break;
+            }
+        }
+        DelayMs(5);
+        RBIF = 0;
+    }
 }

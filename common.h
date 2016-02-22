@@ -15,13 +15,19 @@ long getTime();
 
 enum Mode 
 { 
+  COMMAND,
+  ENTER_DATA,
   SELECT_GAME, 
   GAME,
-  TEMP_TEST,
-  RESUT_DISPALY,
-  ENTER_DATA
+  PAUSE,
+  RESUT_DISPALY
+};
+
+enum GameMode 
+{ 
+  SINGLE,
+  DOUBLE
 };
  
 extern int keyStatus, note;
-extern char mode, flag, buffStart, buffEnd;
-extern char buffer[BUFF_SIZE];
+extern char mode, gameMode;

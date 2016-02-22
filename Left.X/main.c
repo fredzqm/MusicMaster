@@ -30,20 +30,22 @@ void configTemSensor(char TMP101_address);
 void main(void) {
     initialize();
     mode = TEMP_TEST;
-    // Sensor = SENSEOR_A;
+    gameMode = DOUBLE;
     char temp_rem, temp;
     while (1) {
         switch(mode) {
+            case COMMAND:
+            case ENTER_DATA:
+                break;
             case SELECT_GAME:
                 break;
             case GAME:
                 pianoMode();
                 break;
-            case TEMP_TEST:
-                testTemperature(SENSEOR_A); // TMP101 with address 1001000
-            case RESUT_DISPALY:
+            case PAUSE:
                 break;
-            case ENTER_DATA:
+                // testTemperature(SENSEOR_A); // TMP101 with address 1001000
+            case RESUT_DISPALY:
                 break;
         }
     }
