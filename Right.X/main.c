@@ -62,10 +62,7 @@ void main(void) {
                 selectGame();
                 break;
             case GAME:
-                if (gameMode == SINGLE) 
-                    singleMode();
-                else if (gameMode == DOUBLE)
-                    doubleMode();
+                game();
                 break;
             case RESUT_DISPALY:
                 result();
@@ -375,7 +372,7 @@ void initialize()
     IOCB4 = 1;
     IOCB5 = 1;
     RBIF = 0;
-    // RBIE = 1;
+    RBIE = 1;
 
 // ---------------------------------------------------------------
     PEIE = 1;                   //Enable all peripheral interrupts 
@@ -426,15 +423,16 @@ void interrupt interrupt_handler(void)
         if (RB5 == 0) {
             switch(gameMode) {
                 case SINGLE:
-                    mode = DOUBLE;
+                    gameMode = DOUBLE;
                     break;
                 case DOUBLE:
-                    mode = SINGLE;
+                    gameMode = SINGLE;
                     break;
                 default:
-                    mode = SINGLE;
+                    gameMode = SINGLE;
                     break;
             }
+            PORTE++;
         }
         DelayMs(5);
         RBIF = 0;

@@ -40,7 +40,7 @@ void main(void) {
             case SELECT_GAME:
                 break;
             case GAME:
-                pianoMode();
+                game();
                 break;
             case PAUSE:
                 break;

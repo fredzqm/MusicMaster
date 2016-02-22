@@ -9,8 +9,7 @@
 #define LINE_WIDTH 16
 
 void pianoMode(); // default
-void singleMode();
-void doubleMode();
+void game();
 void result();
 int getNote(int keyEncoding);
 char playNote(int keyEncoding, long length);

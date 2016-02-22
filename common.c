@@ -4,11 +4,7 @@ int keyStatus, note, totalScore, nCount;
 int timerCounter;
 char mode, gameMode;
 
-void singleMode() {
-
-}
-
-void doubleMode() {
+void game() {
     Note notes[LINE_WIDTH];
     signed char i, index, read;
     totalScore = 0; nCount = 0;
@@ -56,34 +52,24 @@ void doubleMode() {
             break;
 
         nCount++;
+
+        // if (gameMode == SINGLE) {
+            // totalScore += playNote(notes[index].keyEncoding, (TIME_FACTOR+INTERVEL_RATIO) * notes[index].length);
+        // } else {
         totalScore += playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
         playNote(0xffff, INTERVEL_RATIO * notes[index].length);
+        // }
     }
     mode = RESUT_DISPALY;
 }
 
-void pianoMode() {
-    char x = getKeyCharacter();
-
-    lcd_clear();
-    lcd_puts("0x");
-    lcd_putch(toHex(keyStatus>>12));
-    lcd_putch(toHex(keyStatus>>8));
-    lcd_putch(toHex(keyStatus>>4));
-    lcd_putch(toHex(keyStatus));
-    lcd_goto(0x40); // go the next line
-    long curTime = getTime();
-    lcd_puts("Time: 0x");
-    lcd_putch(toHex(curTime>>28));
-    lcd_putch(toHex(curTime>>24));
-    lcd_putch(toHex(curTime>>20));
-    lcd_putch(toHex(curTime>>16));
-    lcd_putch(toHex(curTime>>12));
-    lcd_putch(toHex(curTime>>8));
-    lcd_putch(toHex(curTime>>4));
-    lcd_putch(toHex(curTime));
-    // DelayMs(100);
-    playNote(keyStatus, 100);
+void updateNote(int keyEncoding){
+    note = getNote(keyEncoding);
+    if (note == 0){
+        CCP1M3 = 1;
+    } else {
+        CCP1M3 = 0;
+    }
 }
 
 char playNote(int keyEncoding, long length) {
@@ -93,31 +79,52 @@ char playNote(int keyEncoding, long length) {
     if (keyEncoding == keyStatus){
         scor = 1;
     }
-    note = getNote(keyEncoding);
-    if (note == 0){
-        CCP1M3 = 1;
+
+    if (gameMode == SINGLE) {
+        updateNote(keyStatus);
     } else {
-        CCP1M3 = 0;
+        updateNote(keyEncoding);
     }
 
     DelayMs(50);
     if (scor = -1 && keyEncoding == keyStatus){
         scor = 5;
     }
+    if (gameMode == SINGLE) {
+        updateNote(keyStatus);
+    }
+
     DelayMs(50);
     if (scor = -1 && keyEncoding == keyStatus){
         scor = 4;
     }
+    if (gameMode == SINGLE) {
+        updateNote(keyStatus);
+    }
+
     DelayMs(50);
     if (scor = -1 && keyEncoding == keyStatus){
         scor = 3;
     }
+    if (gameMode == SINGLE) {
+        updateNote(keyStatus);
+    }
+
     DelayMs(50);
     if (scor = -1 && keyEncoding == keyStatus){
         scor = 2;
     }
+    if (gameMode == SINGLE) {
+        updateNote(keyStatus);
+    }
+
     clock += length;
-    while(getTime() - clock < 0);
+    while(getTime() - clock < 0){
+        if (gameMode == SINGLE) {
+            updateNote(keyStatus);
+        }
+        DelayMs(50);
+    }
     return scor;
 }
 
