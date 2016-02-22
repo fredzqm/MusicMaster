@@ -6,19 +6,40 @@ char mode, gameMode;
 
 
 void singleMode() {
-    
+
 }
 
 void doubleMode() {
+    char note[LINE_WIDTH][2];
+    char i, index;
+    for (i = 0 ; i < LINE_WIDTH; i++){
+        note[i][0] = 0;
+        note[i][1] = 0;
+    }
+    index = 0;
     char read = readSong();
     while(read != END_SONG) {
         Note n = decode(read);
         outString("\n\rPlaying  ");
         outString(n.name);
-        playNote(n.keyEncoding, TIME_FACTOR * (1 - INTERVEL_RATIO) * n.length);
-        playNote(0, TIME_FACTOR * INTERVEL_RATIO * n.length);
+        playNote(n.keyEncoding, TIME_FACTOR * n.length);
+        playNote(0, INTERVEL_RATIO * n.length);
+        note[0][index] = n.name[0];
+        note[1][index] = n.name[1];
+
+        lcd_clear();
+        lcd_goto(0);
+        for (i = (index+1)%LINE_WIDTH ; i != index; i = (i+1)%LINE_WIDTH ) {
+            lcd_putch(note[i][0]);
+        }
+        lcd_goto(0x40);
+        for (i = (index+1)%LINE_WIDTH ; i != index; i = (i+1)%LINE_WIDTH ) {
+            lcd_putch(note[i][2]);
+        }
         read = readSong();
+        index = (index+1)%LINE_WIDTH;
     }
+    mode = RESUT_DISPALY;
 }
 
 void pianoMode() {

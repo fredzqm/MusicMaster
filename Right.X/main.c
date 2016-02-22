@@ -220,12 +220,12 @@ void handleCommand(char* command) {
                 outString(argv[1]);
                 openSong(i);
                 char read = readSong();
-                while(read != END_SONG) {
+                while(read != END_SONG && mode == COMMAND) {
                     Note n = decode(read);
                     outString("\n\rPlaying  ");
                     outString(n.name);
-                    playNote(n.keyEncoding, TIME_FACTOR * (1 - INTERVEL_RATIO) * n.length);
-                    playNote(0, TIME_FACTOR * INTERVEL_RATIO * n.length);
+                    playNote(n.keyEncoding, TIME_FACTOR * n.length);
+                    playNote(0, INTERVEL_FACTOR * n.length);
                     read = readSong();
                 }
                 // playNote(0, 0);

@@ -5,8 +5,8 @@
 #include "string.h"
 #include "song.h"
 
-#define TIME_FACTOR 500000
 #define INTERVEL_RATIO 0.1
+#define LINE_WIDTH 16
 
 void pianoMode(); // default
 void singleMode();

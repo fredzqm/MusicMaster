@@ -86,6 +86,9 @@ char encode(char* sym) {
 
 Note decode(char note) {
 	Note n;
+	n.name[0] = ' ';
+	n.name[2] = '\0';
+	n.keyEncoding = 0;
 	switch(note & 0xc0){
 		case 0x00:
 			n.length = 1;
@@ -102,91 +105,106 @@ Note decode(char note) {
 		default:
 			return;
 	}
+
 	switch(note & 0x37) {
 		case 0x01: 
-			n.name = "*1";
+			n.name[0] = '*';
+			n.name[1] = '1';
 			n.keyEncoding = 0x6fff;
 			break; // *1 (1A)
 		case 0x02: 
-			n.name = "*2";
+			n.name[0] = '*';
+			n.name[1] = '2';
 			n.keyEncoding = 0x7eff;
 			break; // *2 (2A)
 		case 0x03: 
-			n.name = "*3";
+			n.name[0] = '*';
+			n.name[1] = '3';
 			n.keyEncoding = 0x7fef;
 			break; // *3 (3A)
 		case 0x04: 
-			n.name = "*4";
+			n.name[0] = '*';
+			n.name[1] = '4';
 			n.keyEncoding = 0x5fff;
 			break; // *4 (4A)
 		case 0x05: 
-			n.name = "*5";
+			n.name[0] = '*';
+			n.name[1] = '5';
 			n.keyEncoding = 0x7dff;
 			break; // *5 (5A)
 		case 0x06: 
-			n.name = "*6";
+			n.name[0] = '*';
+			n.name[1] = '6';
 			n.keyEncoding = 0x7fdf;
 			break; // *6 (6A)
 		case 0x07: 
-			n.name = "*7";
+			n.name[0] = '*';
+			n.name[1] = '7';
 			n.keyEncoding = 0x3fff;
 			break; // *7 (7A)
 
 		case 0x11: 
-			n.name = "1";
+			n.name[1] = '1';
 			n.keyEncoding = 0xefff;
 			break; // 1
 		case 0x12: 
-			n.name = "2";
+			n.name[1] = '2';
 			n.keyEncoding = 0xfeff;
 			break; // 2
 		case 0x13: 
-			n.name = "3";
+			n.name[1] = '3';
 			n.keyEncoding = 0xffef;
 			break; // 3
 		case 0x14: 
-			n.name = "4";
+			n.name[1] = '4';
 			n.keyEncoding = 0xdfff;
 			break; // 4
 		case 0x15: 
-			n.name = "5";
+			n.name[1] = '5';
 			n.keyEncoding = 0xfdff;
 			break; // 5
 		case 0x16: 
-			n.name = "6";
+			n.name[1] = '6';
 			n.keyEncoding = 0xffdf;
 			break; // 6
 		case 0x17: 
-			n.name = "7";
+			n.name[1] = '7';
 			n.keyEncoding = 0xbfff;
 			break; // 7
 
 		case 0x21: 
-			n.name = "#1";
+			n.name[0] = '#';
+			n.name[1] = '1';
 			n.keyEncoding = 0xef7f;
 			break; // #1 (1B)
 		case 0x22: 
-			n.name = "#2";
+			n.name[0] = '#';
+			n.name[1] = '2';
 			n.keyEncoding = 0xfe7f;
 			break; // #2 (2B)
 		case 0x23: 
-			n.name = "#3";
+			n.name[0] = '#';
+			n.name[1] = '3';
 			n.keyEncoding = 0xff6f;
 			break; // #3 (3B)
 		case 0x24: 
-			n.name = "#4";
+			n.name[0] = '#';
+			n.name[1] = '4';
 			n.keyEncoding = 0xdf7f;
 			break; // #4 (4B)
 		case 0x25: 
-			n.name = "#5";
+			n.name[0] = '#';
+			n.name[1] = '5';
 			n.keyEncoding = 0xfd7f;
 			break; // #5 (5B)
 		case 0x26: 
-			n.name = "#6";
+			n.name[0] = '#';
+			n.name[1] = '6';
 			n.keyEncoding = 0xff5f;
 			break; // #6 (6B)
 		case 0x27: 
-			n.name = "#7";
+			n.name[0] = '#';
+			n.name[1] = '7';
 			n.keyEncoding = 0xbf7f;
 			break; // #7 (7B)
 
