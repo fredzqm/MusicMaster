@@ -68,6 +68,7 @@ void main(void) {
                     doubleMode();
                 break;
             case RESUT_DISPALY:
+                result();
                 break;
         }
     }
@@ -87,7 +88,7 @@ void selectGame() {
     lcd_clear();
     lcd_goto(0);
     lcd_puts("Song: ");
-    itoa(songID, tbuff); lcd_puts(tbuff);
+    itoa(songID, tbuff, 3); lcd_puts(tbuff);
     switch(gameMode) {
         case SINGLE: lcd_puts(" Single"); break;
         case DOUBLE: lcd_puts(" Double"); break;
@@ -235,7 +236,7 @@ void handleCommand(char* command) {
     } else if (strcmp(command, "ls")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             outString("\n\rSong ");
-            itoa(i, tbuff); outString(tbuff);
+            itoa(i, tbuff, 3); outString(tbuff);
             outString(": ");
             getSongName(i, tbuff); outString(tbuff);
         }

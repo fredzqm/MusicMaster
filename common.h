@@ -11,8 +11,9 @@
 void pianoMode(); // default
 void singleMode();
 void doubleMode();
+void result();
 int getNote(int keyEncoding);
-void playNote(int keyEncoding, long length);
+char playNote(int keyEncoding, long length);
 char getKeyCharacter();
 void updateKey(void);
 void general_init();

@@ -1,7 +1,7 @@
 #include "string.h"
 
 
-char toHex(char binary){
+char toHex(char binary) {
     binary = binary % 16;
     if (binary < 10) {
         return binary + '0';
@@ -20,11 +20,10 @@ int strcmp(char* a, char* b) {
     return 0;
 }
 
-void itoa(char n, char* s)
-{
-    s[3] = '\0';
+void itoa(char n, char* s, int digitNum) {
+    s[digitNum] = '\0';
     int i;
-    for (i = 2; i>=0; i--){
+    for (i = digitNum - 1; i>=0; i--){
         if (n == 0 & i != 2 ){
             s[i] = ' ';
         } else {

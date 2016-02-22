@@ -1,6 +1,6 @@
 #include "common.h"
 
-int keyStatus, note;
+int keyStatus, note, totalScore, nCount;
 int timerCounter;
 char mode, gameMode;
 
@@ -11,6 +11,7 @@ void singleMode() {
 void doubleMode() {
     Note notes[LINE_WIDTH];
     signed char i, index, read;
+    totalScore = 0; nCount = 0;
 
     for (i = 0 ; i < LINE_WIDTH; i++){
         notes[i].keyEncoding = 0;
@@ -31,7 +32,7 @@ void doubleMode() {
         } 
         if (read == END_SONG) {
             notes[index].keyEncoding = 0;
-            notes[index].length = 2;
+            notes[index].length = 0; // to denote the end
             notes[index].name[0] = ' ';
             notes[index].name[1] = ' ';
             notes[index].name[2] = '\0';
@@ -51,9 +52,11 @@ void doubleMode() {
             lcd_putch(notes[(i+index)%LINE_WIDTH].name[0]);
         }
 
-        // if (notes[index].keyEncoding == END_SONG && read == END_SONG)
-            // break;
-        playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
+        if (notes[index].length == 0)
+            break;
+
+        nCount++;
+        totalScore += playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
         playNote(0xffff, INTERVEL_RATIO * notes[index].length);
     }
     mode = RESUT_DISPALY;
@@ -83,16 +86,51 @@ void pianoMode() {
     playNote(keyStatus, 100);
 }
 
-void playNote(int keyEncoding, long length) {
+char playNote(int keyEncoding, long length) {
+    signed char scor = -1;
     long clock = getTime();
+    updateKey();
+    if (keyEncoding == keyStatus){
+        scor = 1;
+    }
     note = getNote(keyEncoding);
     if (note == 0){
         CCP1M3 = 1;
     } else {
         CCP1M3 = 0;
     }
+
+    DelayMs(50);
+    if (scor = -1 && keyEncoding == keyStatus){
+        scor = 5;
+    }
+    DelayMs(50);
+    if (scor = -1 && keyEncoding == keyStatus){
+        scor = 4;
+    }
+    DelayMs(50);
+    if (scor = -1 && keyEncoding == keyStatus){
+        scor = 3;
+    }
+    DelayMs(50);
+    if (scor = -1 && keyEncoding == keyStatus){
+        scor = 2;
+    }
     clock += length;
     while(getTime() - clock < 0);
+    return scor;
+}
+
+void result() {
+    char tbuff[5];
+    lcd_clear();
+    lcd_goto(0);
+    lcd_puts("Notes: ");
+    itoa(nCount, tbuff, 5); lcd_puts(tbuff);
+    lcd_goto(0x40);
+    lcd_puts("Score:");
+    itoa(totalScore, tbuff, 5); lcd_puts(tbuff);
+    DelayMs(100);
 }
 
 int getNote(int keyEncoding)
@@ -165,7 +203,7 @@ void updateKey() {
     keyStatus |= PORTB & 0x000f;
 }
 
-long getTime() {
+long getTime(){
     return ( (long)timerCounter <<16) + TMR1;
 }
 
@@ -190,8 +228,7 @@ void general_init() {
 // -------------------------------------------------------------- timer1
     TMR1GE = 0;   TMR1ON = 1;         //Enable TIMER1 (See Fig. 6-1 TIMER1 Block Diagram in PIC16F887 Data Sheet)
     TMR1CS = 0;                     //Select internal clock whose frequency is Fosc/4 = 2 MHz, where Fosc = 8 MHz
-    T1CKPS1 = 0; T1CKPS0 = 0;       //Set prescale to divide by 1 yielding a clock tick period of 0.5 microseconds
-                                    // 1 sec = 2000000 ticks
+    T1CKPS1 = 0; T1CKPS0 = 0;       //Set prescale to divide by 1 yielding a clock tick period of 0.5 microsecond, scores
     timerCounter = 0;
     TMR1IF = 0;
     TMR1IE = 1;
@@ -222,7 +259,7 @@ void general_interrupt() {
         bufWrite = (bufWrite + 1 ) % BUFF_SIZE;
         RCIF = 0;
     }
-    if (TMR1IF == 1) {
+    if(TMR1IF == 1) {
         timerCounter++;
         TMR1IF = 0;
         RE1 =1;
