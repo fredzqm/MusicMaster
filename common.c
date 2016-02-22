@@ -4,40 +4,57 @@ int keyStatus, note;
 int timerCounter;
 char mode, gameMode;
 
-
 void singleMode() {
 
 }
 
 void doubleMode() {
-    char note[LINE_WIDTH][2];
-    char i, index;
+    Note notes[LINE_WIDTH];
+    signed char i, index, read;
+
     for (i = 0 ; i < LINE_WIDTH; i++){
-        note[i][0] = 0;
-        note[i][1] = 0;
+        notes[i].keyEncoding = 0;
+        notes[i].length = 2;
+        notes[i].name[0] = ' ';
+        notes[i].name[1] = ' ';
+        notes[i].name[2] = '\0';
     }
+
+    
     index = 0;
-    char read = readSong();
-    while(read != END_SONG) {
-        Note n = decode(read);
-        outString("\n\rPlaying  ");
-        outString(n.name);
-        playNote(n.keyEncoding, TIME_FACTOR * n.length);
-        playNote(0, INTERVEL_RATIO * n.length);
-        note[0][index] = n.name[0];
-        note[1][index] = n.name[1];
+    read = END_SONG + 1;
+    while(1) {
+        if (read != END_SONG) {
+            read = readSong();
+            Note n = decode(read);
+            notes[index] = n;
+        } 
+        if (read == END_SONG) {
+            notes[index].keyEncoding = 0;
+            notes[index].length = 2;
+            notes[index].name[0] = ' ';
+            notes[index].name[1] = ' ';
+            notes[index].name[2] = '\0';
+        }
+
+        index++;
+        if (index == LINE_WIDTH)
+            index = 0;
 
         lcd_clear();
         lcd_goto(0);
-        for (i = (index+1)%LINE_WIDTH ; i != index; i = (i+1)%LINE_WIDTH ) {
-            lcd_putch(note[i][0]);
+        for (i = LINE_WIDTH-1 ; i >= 0; i--){
+            lcd_putch(notes[(i+index)%LINE_WIDTH].name[1]);
         }
         lcd_goto(0x40);
-        for (i = (index+1)%LINE_WIDTH ; i != index; i = (i+1)%LINE_WIDTH ) {
-            lcd_putch(note[i][2]);
+        for (i = LINE_WIDTH-1 ; i >= 0; i--){
+            lcd_putch(notes[(i+index)%LINE_WIDTH].name[0]);
         }
-        read = readSong();
-        index = (index+1)%LINE_WIDTH;
+
+        // if (notes[index].keyEncoding == END_SONG && read == END_SONG)
+            // break;
+        playNote(notes[index].keyEncoding, TIME_FACTOR * notes[index].length);
+        playNote(0xffff, INTERVEL_RATIO * notes[index].length);
     }
     mode = RESUT_DISPALY;
 }

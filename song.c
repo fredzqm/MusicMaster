@@ -60,10 +60,14 @@ char encode(char* sym) {
 	} else {
 		tone = 0x10; // middle octate, 0b--01 ----
 	}
+	
 	char length = *sym++ - '0';
-	if (length < 1 || length > 7)
+	if (length > 7)
 		return END_SONG; // error
+	if (length == 0 && tone != 0x10)
+		return END_SONG; // bad empty note
 	tone += length;
+
 	if (*sym == '\\' && *(sym+1) == '\0'){
 		tone |= 0x00; // 32th note, 1/2 sec, 0b00-- ----
 	} else if (*sym == '\0'){
@@ -78,17 +82,11 @@ char encode(char* sym) {
 	return tone;
 }
 
-/*
-	
-}
-
-*/
-
 Note decode(char note) {
 	Note n;
 	n.name[0] = ' ';
 	n.name[2] = '\0';
-	n.keyEncoding = 0;
+	n.keyEncoding = END_SONG;
 	switch(note & 0xc0){
 		case 0x00:
 			n.length = 1;
@@ -143,6 +141,10 @@ Note decode(char note) {
 			n.keyEncoding = 0x3fff;
 			break; // *7 (7A)
 
+		case 0x19:
+			n.name[1] = '0';
+			n.keyEncoding = 0xffff;
+			break;
 		case 0x11: 
 			n.name[1] = '1';
 			n.keyEncoding = 0xefff;

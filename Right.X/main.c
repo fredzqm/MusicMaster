@@ -37,7 +37,7 @@ void handleNote(char* noteSequence);
 int width, nextRising;
 const int widthMin = 1080;
 const int widthRange = 4700;
-char inputBuf[60];
+char inputBuf[50];
 char bufCount;
 char mode;
 
@@ -103,7 +103,6 @@ void selectGame() {
 }
 
 void enterData() {
-    int a = 1;
     if (bufCount == GIVE_PROMPT){
         switch (mode) {
             case COMMAND:
