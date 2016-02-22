@@ -5,6 +5,22 @@ int timerCounter;
 char mode, gameMode;
 
 
+void singleMode() {
+    
+}
+
+void doubleMode() {
+    char read = readSong();
+    while(read != END_SONG) {
+        Note n = decode(read);
+        outString("\n\rPlaying  ");
+        outString(n.name);
+        playNote(n.keyEncoding, TIME_FACTOR * (1 - INTERVEL_RATIO) * n.length);
+        playNote(0, TIME_FACTOR * INTERVEL_RATIO * n.length);
+        read = readSong();
+    }
+}
+
 void pianoMode() {
     char x = getKeyCharacter();
 

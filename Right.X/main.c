@@ -19,13 +19,10 @@
 
 
 #include "../common.h"
-#include "song.h"
 
 #define EEPROMA  0xA0
 #define EEPROMB  0xA1
 #define GIVE_PROMPT 0xff
-#define TIME_FACTOR 500000
-#define INTERVEL_RATIO 0.1
 
 void selectGame();
 void enterData();
@@ -48,6 +45,13 @@ void main(void) {
     initialize();
     mode = COMMAND;
     gameMode = DOUBLE;
+    if (mode == COMMAND){
+        lcd_clear();
+        lcd_goto(0);
+        lcd_puts("Command Mode");
+        lcd_goto(0x40);
+        lcd_puts("User Tera Term");
+    }
     while (1) {
         switch(mode) {
             case COMMAND:
@@ -58,7 +62,10 @@ void main(void) {
                 selectGame();
                 break;
             case GAME:
-                pianoMode();
+                if (gameMode == SINGLE) 
+                    singleMode();
+                else if (gameMode == DOUBLE)
+                    doubleMode();
                 break;
             case RESUT_DISPALY:
                 break;
@@ -81,12 +88,18 @@ void selectGame() {
     lcd_goto(0);
     lcd_puts("Song: ");
     itoa(songID, tbuff); lcd_puts(tbuff);
+    switch(gameMode) {
+        case SINGLE: lcd_puts(" Single"); break;
+        case DOUBLE: lcd_puts(" Double"); break;
+    }
     lcd_goto(0x40);
     getSongName(songID, tbuff);
     if (tbuff[0] == '\0')
         lcd_puts("Not exists!");
-    else
+    else {
+        openSong(songID);
         lcd_puts(tbuff);
+    }
 }
 
 void enterData() {
@@ -102,11 +115,8 @@ void enterData() {
             default:
                 return;
                 break;
-         }
+        }
         bufCount = 0;
-        RE0 = 1;
-        RE1 = 1;
-        RE2 = 1;
     }
     while (!hasInChar()) {
         if (mode != COMMAND || mode!= ENTER_DATA)
@@ -171,12 +181,6 @@ void handleCommand(char* command) {
     char tbuff[11];
     tokenize(command, argv);
     int i = 0;
-    // while(argv[i] != 0){
-    //     outString("\n\rArg");
-    //     itoa(i, tbuff); outString(tbuff);
-    //     outString(": ");
-    //     outString(argv[i++]);
-    // }
     if (strcmp(command, "touch")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             if (!existsSong(i)){
