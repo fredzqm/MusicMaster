@@ -29,8 +29,7 @@ char playNote(int keyEncoding, long length) {
     updateKey();
     if (scor == 0 && keyEncoding == keyStatus){
         scor = 4;
-        // GREEN
-        YELLOW
+        GREEN
     }
     if (gameMode == SINGLE) {
         updateNote(keyStatus);
@@ -59,8 +58,10 @@ char playNote(int keyEncoding, long length) {
             updateNote(keyStatus);
         }
     }
-    if (scor == -1)
+    if (scor == -1){
+        scor = 0;
         DARK
+    }
     return scor;
 }
 
