@@ -60,6 +60,7 @@ void game() {
     signed char i, index, read;
     totalScore = 0; nCount = 0;
 
+    testTemperature(SENSEOR_A);
     for (i = 0 ; i < LINE_WIDTH; i++){
         notes[i].keyEncoding = 0;
         notes[i].length = 2;
@@ -177,6 +178,16 @@ void testTemperature(unsigned char TMP101_address) {
     I2C_Stop();         // Generate stop condition
 
 // display result
+    if (temp > 50){
+        lcd_clear();
+        lcd_goto(0);
+        lcd_puts("Power too hot");
+        lcd_goto(0x40);
+        lcd_puts("Stop playing, take some rest");
+        outChar(0xff);// let the other PIC know.
+        while(1);
+    }
+    
     char sign_char, dig0_char, dig1_char, dig2_char, tenth_char, hundredth_char;
     
     if (temp & 0x80)            // If temp is negative make sign character ?-?
@@ -208,8 +219,8 @@ void testTemperature(unsigned char TMP101_address) {
     lcd_putch(hundredth_char + 0x30);
     lcd_putch(0xdf);
     lcd_putch('C');
-// delay    
-    DelayMs(100);
+// delay
+
 }
 
 void configTemSensor(char TMP101_address) {

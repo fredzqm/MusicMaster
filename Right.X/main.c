@@ -77,6 +77,17 @@ void game() {
     signed char i, index, read;
     totalScore = 0; nCount = 0;
 
+    if (hasInChar){
+        if (inChar() == 1){
+            lcd_clear();
+            lcd_goto(0);
+            lcd_puts("Power too hot");
+            lcd_goto(0x40);
+            lcd_puts("Stop playing, take some rest");
+            while(1);
+        }
+    }
+
     for (i = 0 ; i < LINE_WIDTH; i++){
         notes[i].keyEncoding = 0;
         notes[i].length = 2;
@@ -278,7 +289,8 @@ void handleCommand(char* command) {
                     outString("\n\rPlaying  ");
                     outString(n.name);
                     playNote(n.keyEncoding, TIME_FACTOR * n.length);
-                    playNote(0, INTERVEL_FACTOR * n.length);
+                    // playNote(0, INTERVEL_FACTOR * n.length);
+                    updateNote(0xffff);
                     read = readSong();
                 }
                 // playNote(0, 0);
@@ -293,7 +305,6 @@ void handleCommand(char* command) {
             outString(": ");
             getSongName(i, tbuff); outString(tbuff);
         }
-        outString("\n\rThis song is not found");
     } else if (strcmp(command, "rm")) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             getSongName(i, tbuff);
@@ -309,7 +320,9 @@ void handleCommand(char* command) {
         for (i = 0; i < MAX_NUM_OF_SONG; i++){
             setSongName(i, "");
         }
-    } 
+    } else {
+        outString("\n\rCommand not found!");
+    }
 }
 
 void handleNote(char* noteSequence) {
@@ -493,7 +506,7 @@ void interrupt interrupt_handler(void)
             }
             PORTE++;
         }
-        DelayMs(5);
+        DelayMs(50);
         RBIF = 0;
     }
 }

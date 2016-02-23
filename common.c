@@ -1,7 +1,7 @@
 #include "common.h"
 // Red BLue Green
 #define RED RE0 = 1; RE1 = 0; RE2 = 0; 
-#define GREEN RE0 = 0; RE1 = 0; RE2 = 1; 
+#define GREEN RE0 = 1; RE1 = 1; RE2 = 1; 
 #define YELLOW RE0 = 1; RE1 = 1; RE2 = 0; 
 #define BLUE RE0 = 0; RE1 = 1; RE2 = 0; 
 #define DARK RE0 = 0; RE1 = 0; RE2 = 0; 
@@ -29,7 +29,8 @@ char playNote(int keyEncoding, long length) {
     updateKey();
     if (scor == 0 && keyEncoding == keyStatus){
         scor = 4;
-        GREEN
+        // GREEN
+        YELLOW
     }
     if (gameMode == SINGLE) {
         updateNote(keyStatus);
@@ -197,6 +198,7 @@ void general_init() {
     bufRead = 0;
     bufWrite = 0;
 
+    DARK;
 }
 
 void general_interrupt() {
@@ -214,6 +216,5 @@ void general_interrupt() {
     if(TMR1IF == 1) {
         timerCounter++;
         TMR1IF = 0;
-        RE1 =1;
     }
 }

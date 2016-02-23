@@ -1,10 +1,10 @@
 #include <xc.h>
 
 #define MAX_SIZE_OF_SONG 64
-#define MAX_NUM_OF_SONG 8
+#define MAX_NUM_OF_SONG 4
 #define MAX_LENGTH_OF_SONG_NAME 8
 #define END_SONG 0
-#define TIME_FACTOR 500000
+#define TIME_FACTOR 600000
 #define INTERVEL_FACTOR 000
 
 enum CMD
